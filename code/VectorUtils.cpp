@@ -7,6 +7,9 @@ Vector2f VectorUtils::rotate(Vector2f point, float angle) {
 float VectorUtils::magnitude(Vector2f A) {
     return std::sqrt(A.x * A.x + A.y * A.y);
 }
+Vector2f VectorUtils::normalise(Vector2f A) {
+    return A * (1.f/magnitude(A));
+}
 Vector2f VectorUtils::componentProd(Vector2f A, Vector2f B) {
     return Vector2f (A.x * B.x, A.y * B.y);
 }

@@ -7,7 +7,7 @@ int main() {
     RectCollider* B = new RectCollider(Transform({40, 30}, 1.f), {40, 40});
 
     //std::cout << A->overlappingBounds(B->transform.pos, B->getBounds()) << std::endl;
-    std::cout << A->overlapRect(B) << std::endl;
+    std::cout << A->checkCol(B) << std::endl;
 
     sf::Font font;
     if (!font.loadFromFile("OpenSans-Regular.ttf")) {

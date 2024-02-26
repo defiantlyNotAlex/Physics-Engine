@@ -25,10 +25,6 @@ Vector2f RectCollider::getBounds() {
     return bounds;
 }
 
-vector<Vector2f> RectCollider::getPoints() {
-    return points;
-}
-
 bool RectCollider::checkPoint(Vector2f point) {
     if (!inBounds(point)) return false;
 
@@ -38,37 +34,16 @@ bool RectCollider::checkPoint(Vector2f point) {
     return tranformedPos.x > halfSize.x && tranformedPos.x < halfSize.x && tranformedPos.y > halfSize.y && tranformedPos.y < halfSize.y;
 }
 
-bool RectCollider::checkCol(Collider * col) {
-    if (!overlappingBounds(col->getPosition(), col->getBounds())) return false;
-
-    switch (col->getType()) {
-    case ColliderType::None:
-        return false;
-    case ColliderType::Point:
-        return checkPoint(col->getPosition());
-    case ColliderType::Rect: 
-        
-        return false;
-    case ColliderType::Circle:
-        
-        return false;
-    case ColliderType::Polygon:
-
-        return false;
-    default:
-        break;
-    }
-    return false;
-}
-
 bool RectCollider::overlapRect(RectCollider* r_col) {
     if (!overlappingBounds(r_col->getPosition(), r_col->getBounds())) return false;
-
     vector<Vector2f> dirVectors;
-    dirVectors.push_back(VectorUtils::directionVector(transform.rot));
-    dirVectors.push_back(VectorUtils::directionVector(r_col->transform.rot));
-    dirVectors.push_back(VectorUtils::directionVector(transform.rot + M_PI_2));
-    dirVectors.push_back(VectorUtils::directionVector(r_col->transform.rot + M_PI_2));
+    auto displacement = VectorUtils::normalise(r_col->getPosition() - getPosition());
+    auto perpDisplacement = Vector2f(-displacement.y, displacement.x);
+    dirVectors.push_back(perpDisplacement);
+    auto res = getSideVectors();
+    dirVectors.insert(dirVectors.end(), res.begin(), res.end());
+    res = r_col->getSideVectors();
+    dirVectors.insert(dirVectors.end(), res.begin(), res.end());
 
     for (Vector2f dirVector : dirVectors) {
         float thisMin = FLT_MAX;
@@ -76,18 +51,23 @@ bool RectCollider::overlapRect(RectCollider* r_col) {
 
         float otherMin = FLT_MAX;
         float otherMax = -FLT_MAX;
-        for (auto point : points) {
-            auto t_point = transform.convertLocaltoWorld(point);
-            thisMin = std::min(thisMin, VectorUtils::projectScaler(t_point, dirVector));
-            thisMax = std::max(thisMax, VectorUtils::projectScaler(t_point, dirVector));
-        }
-        for (auto point : r_col->getPoints()) {
-            auto t_point = r_col->transform.convertLocaltoWorld(point);
-            otherMin = std::min(otherMin, VectorUtils::projectScaler(t_point, dirVector));
-            otherMax = std::max(otherMax, VectorUtils::projectScaler(t_point, dirVector));
-        }
+        
+        getMaxProjection(dirVector, thisMin, thisMax);
+        r_col->getMaxProjection(dirVector, otherMin, otherMax);
         
         if (!(thisMin < otherMax && thisMax > otherMin)) return false;
     }
     return true;
+}
+
+vector<Vector2f> RectCollider::getSideVectors() {
+    return {VectorUtils::directionVector(transform.rot), VectorUtils::directionVector(transform.rot + M_PI_2)};
+}
+void RectCollider::getMaxProjection(Vector2f directionVector, float & min, float & max) {
+    for (auto point : points) {
+        auto t_point = transform.convertLocaltoWorld(point);
+        auto projection = VectorUtils::projectScaler(t_point, directionVector);
+        min = std::min(min, projection);
+        max = std::max(max, projection);
+    }
 }
