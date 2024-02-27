@@ -1,7 +1,8 @@
 #pragma once
 #include <SFML/System/Vector2.hpp>
 using sf::Vector2f;
-#define _USE_MATH_DEFINES
+using sf::Vector2i;
+#include "FloatUtils.hpp"
 #include <cmath>
 #include <cfloat>
 #include <algorithm>
@@ -32,6 +33,6 @@ class VectorUtils {
         static Vector2f clampMagnitude(Vector2f value, float min, float max);
         static float crossProd(Vector2f A, Vector2f B);
         static Vector2i floorToInt(Vector2f A);
-        static Vector2i cielToInt(Vector2f A);
+        static Vector2i ceilToInt(Vector2f A);
         static Vector2f toFloat(Vector2i A);
 };

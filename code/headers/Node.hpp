@@ -18,6 +18,6 @@ class Node {
         ~Node();
 
         virtual void update(float dt);
-        void addChild(Node* component);
+        Node* addChild(Node* component);
         void removeChild(Node* component);
 };

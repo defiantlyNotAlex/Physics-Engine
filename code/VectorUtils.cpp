@@ -31,6 +31,16 @@ float VectorUtils::projectScaler(Vector2f A, Vector2f B) {
 Vector2f VectorUtils::directionVector(float angle) {
     return Vector2f (std::cos(angle), std::sin(angle));
 }
+Vector2i VectorUtils::floorToInt(Vector2f A) {
+    return Vector2i(std::floor(A.x), std::floor(A.y));
+}
+Vector2i VectorUtils::ceilToInt(Vector2f A) {
+    return Vector2i(std::ceil(A.x), std::ceil(A.y));
+}
+Vector2f VectorUtils::toFloat(Vector2i A) {
+    return Vector2f(A.x, A.y);
+}
+
 
 Vector2f VectorUtils::zero() {return Vector2f(0, 0);}
 Vector2f VectorUtils::one() {return Vector2f(1, 1);};
