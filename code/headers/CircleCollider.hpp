@@ -5,9 +5,10 @@ class CircleCollider : public Collider {
     private:
         float radius;
     public:
-        CircleCollider(Transform _transform, float _radius);
+        CircleCollider(Node* _parent, Transform _transform, float _radius);
         
         Vector2f getBounds();
+        float getRadius();
 
         bool checkPoint(Vector2f point);
         vector<Vector2f> getSideVectors();

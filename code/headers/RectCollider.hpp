@@ -7,7 +7,7 @@ class RectCollider : public Collider {
         vector<Vector2f> points;
         Vector2f size;
     public:
-        RectCollider(Transform _transform, Vector2f _size);
+        RectCollider(Node* _parent, Transform _transform, Vector2f _size);
         ~RectCollider();
 
         Vector2f getBounds();

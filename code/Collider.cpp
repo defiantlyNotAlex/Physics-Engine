@@ -1,8 +1,7 @@
 #include "headers/Collider.hpp"
 
-Collider::Collider(Transform _transform, ColliderType _colliderType) {
-    transform = _transform;
-    _colliderType = _colliderType;
+Collider::Collider(Node* _parent, Transform _transform, ColliderType _colliderType) : Node (_parent, _transform) {
+    colliderType = _colliderType;
 }
 Collider::~Collider() {}
 ColliderType Collider::getType() {
@@ -36,10 +35,12 @@ bool Collider::overlappingBounds(Vector2f otherPos, Vector2f otherBounds) {
 }
 bool Collider::checkCol(Collider* o_col) {
     if (!overlappingBounds(o_col->getPosition(), o_col->getBounds())) return false;
+
     vector<Vector2f> dirVectors;
     auto displacement = VectorUtils::normalise(o_col->getPosition() - getPosition());
     auto perpDisplacement = Vector2f(-displacement.y, displacement.x);
     dirVectors.push_back(perpDisplacement);
+
     auto res = getSideVectors();
     dirVectors.insert(dirVectors.end(), res.begin(), res.end());
     res = o_col->getSideVectors();

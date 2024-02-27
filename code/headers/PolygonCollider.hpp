@@ -6,7 +6,7 @@ class PolygonCollider : public Collider {
         /// @brief vertexes of the rect declared in clockwise order
         vector<Vector2f> points;
     public:
-        PolygonCollider(Transform _transform, vector<Vector2f> _points);
+        PolygonCollider(Node* _parent, Transform _transform, vector<Vector2f> _points);
         ~PolygonCollider();
 
         Vector2f getBounds();

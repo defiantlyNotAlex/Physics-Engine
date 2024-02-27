@@ -1,6 +1,7 @@
 #pragma once
 #include <SFML/System/Vector2.hpp>
 using sf::Vector2f;
+using sf::Vector2i;
 #include "VectorUtils.hpp"
 
 class Transform {

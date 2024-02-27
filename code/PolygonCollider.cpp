@@ -1,6 +1,6 @@
 #include "headers/PolygonCollider.hpp"
 
-PolygonCollider::PolygonCollider(Transform _transform, vector<Vector2f> _points) : Collider (_transform, ColliderType::Polygon) {
+PolygonCollider::PolygonCollider(Node* _parent, Transform _transform, vector<Vector2f> _points) : Collider (_parent, _transform, ColliderType::Polygon) {
     points = _points;
 }
 PolygonCollider::~PolygonCollider() {}
@@ -14,13 +14,15 @@ Vector2f PolygonCollider::getBounds() {
     }
     return bounds;
 }
-bool PolygonCollider::checkPoint(Vector2f point) {
-    for (size_t i = 1; i < points.size(); i++) {
-        auto prev = transform.convertLocaltoWorld(points[i-1]);
-        auto curr = transform.convertLocaltoWorld(points[i]);
-        Vector2f side = curr - prev;
-        Vector2f displacement = point - prev;
-        if (VectorUtils::dotProd(side, displacement) > 0) {
+bool PolygonCollider::checkPoint(Vector2f point) {\
+    if (!inBounds(point)) return false;
+
+    for (size_t i = 0; i < points.size(); i++) {
+        auto prev = transform.convertLocaltoWorld(points[i]);
+        auto curr = transform.convertLocaltoWorld(points[i+1%points.size()]);
+        Vector2f side =  prev - curr;
+        Vector2f displacement = prev - point;
+        if (VectorUtils::crossProd(side, displacement) < 0) {
             return false;
         }
     }

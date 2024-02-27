@@ -3,7 +3,7 @@
 using std::cout;
 using std::endl;
 
-RectCollider::RectCollider(Transform _transform, Vector2f _size) : Collider(_transform, ColliderType::Rect) {
+RectCollider::RectCollider(Node* _parent, Transform _transform, Vector2f _size) : Collider(_parent, _transform, ColliderType::Rect) {
     size = _size;
     Vector2f halfSize = size/2.f;
     points.push_back(Vector2f (-halfSize.x, -halfSize.y));
@@ -26,12 +26,18 @@ Vector2f RectCollider::getBounds() {
 }
 
 bool RectCollider::checkPoint(Vector2f point) {
-    if (!inBounds(point)) return false;
+    //if (!inBounds(point)) return false;
 
-    const Vector2f tranformedPos = transform.convertWorldtoLocal(point);
-    const Vector2f halfSize = size/2.f;
-
-    return tranformedPos.x > halfSize.x && tranformedPos.x < halfSize.x && tranformedPos.y > halfSize.y && tranformedPos.y < halfSize.y;
+    for (size_t i = 0; i < points.size(); i++) {
+        auto prev = transform.convertLocaltoWorld(points[i]);
+        auto curr = transform.convertLocaltoWorld(points[(i+1)%points.size()]);
+        Vector2f side = curr - prev;
+        Vector2f displacement = point - prev;
+        if (VectorUtils::crossProd(displacement, side) > 0) {
+            return false;
+        }
+    }
+    return true;
 }
 
 bool RectCollider::overlapRect(RectCollider* r_col) {

@@ -1,5 +1,5 @@
 #pragma once
-#include "Transform.hpp"
+#include "Node.hpp"
 #include <vector>
 using std::vector;
 
@@ -12,13 +12,11 @@ enum class ColliderType{
     Line,
 };
 
-class Collider {
+class Collider : public Node {
     protected:
         ColliderType colliderType;
     public:
-        Transform transform;
-
-        Collider(Transform _transform, ColliderType _coliderType);
+        Collider(Node* _parent, Transform _transform, ColliderType _coliderType);
         ~Collider();
 
         ColliderType getType();

@@ -22,6 +22,7 @@ class VectorUtils {
         /// @brief dot product of A and B
         static float dotProd(Vector2f A, Vector2f B);
         static float magnitude(Vector2f A);
+        static float magnitudeSqr(Vector2f A);
         static Vector2f normalise(Vector2f A);
         /// @brief Projects A onto B
         static Vector2f project(Vector2f A, Vector2f B);
@@ -29,4 +30,8 @@ class VectorUtils {
         static float projectScaler(Vector2f A, Vector2f B);
         static Vector2f directionVector(float angle);
         static Vector2f clampMagnitude(Vector2f value, float min, float max);
+        static float crossProd(Vector2f A, Vector2f B);
+        static Vector2i floorToInt(Vector2f A);
+        static Vector2i cielToInt(Vector2f A);
+        static Vector2f toFloat(Vector2i A);
 };
