@@ -6,14 +6,15 @@ class Camera : public Node {
     private:
         /// @brief the scale of the camera display units per world unit
         float scale;
+        sf::RenderWindow* window;
     public:
-        Camera(Node* parent, Transform _transform, float _scale);
-        Vector2f convertWorldtoDisplay(sf::RenderWindow &window, Vector2f world);
-        Vector2f convertDisplaytoWorld(sf::RenderWindow &window, Vector2f display);
+        Camera(Node* parent, sf::RenderWindow * window, Transform _transform, float _scale);
+        Vector2f convertWorldtoDisplay(Vector2f world);
+        Vector2f convertDisplaytoWorld(Vector2f display);
 
-        void drawRect(sf::RenderWindow &window, Transform rectTransform, Vector2f size, sf::Color colour = sf::Color::White, sf::Texture* sprite = nullptr);
+        void drawRect(Transform rectTransform, Vector2f size, sf::Color colour = sf::Color::White, sf::Texture* sprite = nullptr);
+        void drawCirc(Transform circTransform, float radius,  sf::Color colour = sf::Color::White, sf::Texture* sprite = nullptr);
+        void drawPolygon(Transform polygonTransform, vector<Vector2f> &points,  sf::Color colour = sf::Color::White, sf::Texture* sprite = nullptr);
 
         void update(float dt);
-
-
 };

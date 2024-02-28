@@ -5,24 +5,37 @@ PolygonCollider::PolygonCollider(Node* _parent, Transform _transform, vector<Vec
 }
 PolygonCollider::~PolygonCollider() {}
 
-Vector2f PolygonCollider::getBounds() {
-    Vector2f bounds = {0, 0};
-    for (auto point : points) {
+vector<Vector2f>& PolygonCollider::getPoints() {
+    return points;
+}
+
+Vector2f PolygonCollider::getMin() {
+    Vector2f bounds = Vector2f(FLT_MAX, FLT_MAX);
+    for (Vector2f point : points) {
         auto t_point = transform.convertLocaltoWorld(point);
-        bounds.x = std::max(bounds.x, std::abs(t_point.x));
-        bounds.y = std::max(bounds.y, std::abs(t_point.y));
+        bounds.x = std::min(bounds.x, t_point.x);
+        bounds.y = std::min(bounds.y, t_point.y);
     }
     return bounds;
 }
-bool PolygonCollider::checkPoint(Vector2f point) {\
+Vector2f PolygonCollider::getMax() {
+    Vector2f bounds = Vector2f(FLT_MIN, FLT_MIN);
+    for (Vector2f point : points) {
+        auto t_point = transform.convertLocaltoWorld(point);
+        bounds.x = std::max(bounds.x, t_point.x);
+        bounds.y = std::max(bounds.y, t_point.y);
+    }
+    return bounds;
+}
+bool PolygonCollider::checkPoint(Vector2f point) {
     if (!inBounds(point)) return false;
 
     for (size_t i = 0; i < points.size(); i++) {
         auto prev = transform.convertLocaltoWorld(points[i]);
-        auto curr = transform.convertLocaltoWorld(points[i+1%points.size()]);
-        Vector2f side =  prev - curr;
-        Vector2f displacement = prev - point;
-        if (VectorUtils::crossProd(side, displacement) < 0) {
+        auto curr = transform.convertLocaltoWorld(points[(i+1)%points.size()]);
+        Vector2f side = curr - prev;
+        Vector2f displacement = point - prev;
+        if (VectorUtils::crossProd(displacement, side) > 0) {
             return false;
         }
     }

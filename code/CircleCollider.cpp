@@ -4,8 +4,11 @@ CircleCollider::CircleCollider(Node* _parent, Transform _transform, float _radiu
     radius = _radius;
 }
         
-Vector2f CircleCollider::getBounds() {
-    return Vector2f(radius, radius);
+Vector2f CircleCollider::getMin() {
+    return transform.pos - Vector2f(radius, radius);
+}
+Vector2f CircleCollider::getMax() {
+    return transform.pos + Vector2f(radius, radius);
 }
 
 float CircleCollider::getRadius() {

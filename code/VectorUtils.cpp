@@ -47,5 +47,5 @@ Vector2f VectorUtils::one() {return Vector2f(1, 1);};
 
 Vector2f VectorUtils::left() {return Vector2f(-1, 0);};
 Vector2f VectorUtils::right() {return Vector2f(1, 0);};
-Vector2f VectorUtils::up() {return Vector2f(0, 1);};
-Vector2f VectorUtils::down() {return Vector2f(0, -1);};
+Vector2f VectorUtils::up() {return Vector2f(0, -1);};
+Vector2f VectorUtils::down() {return Vector2f(0, 1);};

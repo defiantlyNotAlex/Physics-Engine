@@ -1,32 +1,44 @@
 #include "headers/Colliders.hpp"
 #include "headers/Camera.hpp"
+#include "headers/PhysicsObject.hpp"
 #include <iostream>
 #include <SFML/Graphics.hpp>
 #include <SFML/Window/Mouse.hpp>
 
 int main() {
-    Node* root = new Node(nullptr, Transform({0, 0}));
-    root->addChild(new RectCollider(root, Transform({-40, 40}), {40, 40}));
-    root->addChild(new RectCollider(root, Transform({100, 100}, 0), {50, 50}));
-    Camera* camera = (Camera*)root->addChild(new Camera(root, Transform({0, 0}, 0), 1));
-
-    RectCollider* A = (RectCollider*)root->children[0];
-    RectCollider* B = (RectCollider*)root->children[1];
-
-    sf::Mouse mouse;
-
-    //std::cout << A->overlappingBounds(B->transform.pos, B->getBounds()) << std::endl;
-    std::cout << A->checkCol(B) << std::endl;
-
     sf::Font font;
     if (!font.loadFromFile("OpenSans-Regular.ttf")) {
         std::cout << "font failed to load" << std::endl;
     }
 
-    sf::RenderWindow window(sf::VideoMode(800, 800), "physics");
+    sf::Clock deltaClock;
+    sf::RenderWindow window(sf::VideoMode(800, 800), "physics");   
 
+    Node* root = new Node(nullptr, Transform({0, 0}));
+    root->addChild(new RectCollider(root, Transform({40, 40}, 1), {40, 40}));
+    root->addChild(new RectCollider(root, Transform({100, 100}, 1), {50, 50}));
+    CircleCollider* D = (CircleCollider*)root->addChild(new CircleCollider(root, Transform(), 10));
+    PolygonCollider* C = (PolygonCollider*)root->addChild(new PolygonCollider(root, Transform({-100, -100}), {{-10,-10},{0,-20},{10,-10},{10,10},{-10,10}}));
+    Camera* camera = (Camera*)root->addChild(new Camera(root, &window, Transform({0, 0}, 0), 2));
+
+    RectCollider* A = (RectCollider*)root->children[0];
+    RectCollider* B = (RectCollider*)root->children[1];
+
+    root->addChild(new PhysicsObject(root, root->transform, A));
+    root->addChild(new PhysicsObject(root, root->transform, B));
+
+    sf::Mouse mouse;
+
+    //std::cout << A->overlappingBounds(B->transform.pos, B->getBounds()) << std::endl;
+    std::cout << A->checkCol(B) << std::endl;
+    
     while (window.isOpen())
     {
+        sf::Time deltaTime = deltaClock.restart();
+        float dt = deltaTime.asSeconds();
+
+        root->update(dt);
+
         sf::Event event;
         while (window.pollEvent(event))
         {
@@ -34,16 +46,31 @@ int main() {
                 window.close();
         }
         auto mpos = mouse.getPosition(window);
-        //std::cout << mpos.x << " " << mpos.y << "\n";
-        camera->transform.rot += 0.0001;
-        if (B->checkPoint(camera->convertDisplaytoWorld(window, Vector2f(mpos.x, mpos.y)))) std::cout << "inside\n";    
+        auto mouseWorldPos = camera->convertDisplaytoWorld(Vector2f(mpos));
+        if (mouse.isButtonPressed(sf::Mouse::Button::Left)) std::cout << mouseWorldPos.x << " " << mouseWorldPos.y << "\n";
+        B->transform.rot += FloatUtils::half_pi * dt;
 
-        //B->transform.rot += 0.01f;
-        //r_B->setRotation(B->transform.rot * (180.f/M_PI));
+        C->transform.pos = mouseWorldPos;
+
+        sf::Color aColour = sf::Color::White;
+        sf::Color bColour = sf::Color::White;
+        sf::Color cColour = sf::Color::White;
+        sf::Color dColour = sf::Color::White;
+
+        if (A->overlappingBounds(C)) aColour = sf::Color::Blue;    
+        if (B->overlappingBounds(C)) bColour = sf::Color::Blue;    
+        if (D->overlappingBounds(C)) dColour = sf::Color::Blue;
+        
+        if (A->checkCol(C)) aColour = sf::Color::Green;    
+        if (B->checkCol(C)) bColour = sf::Color::Green;
+        if (D->checkCol(C)) dColour = sf::Color::Green;
+
 
         window.clear();
-        camera->drawRect(window, A->transform, A->getSize());
-        camera->drawRect(window, B->transform, B->getSize());
+        camera->drawRect(A->transform, A->getSize(), aColour);
+        camera->drawRect(B->transform, B->getSize(), bColour);
+        camera->drawPolygon(C->transform, C->getPoints(), cColour);
+        camera->drawCirc(D->transform, D->getRadius(), dColour);
         window.display();        
     }
     return 0;

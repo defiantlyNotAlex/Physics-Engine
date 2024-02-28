@@ -7,7 +7,8 @@ class CircleCollider : public Collider {
     public:
         CircleCollider(Node* _parent, Transform _transform, float _radius);
         
-        Vector2f getBounds();
+        Vector2f getMin();
+        Vector2f getMax();
         float getRadius();
 
         bool checkPoint(Vector2f point);
