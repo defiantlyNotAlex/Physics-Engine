@@ -9,20 +9,28 @@ enum class ColliderType{
     Rect,
     Circle,
     Polygon,
-    Line,
 };
 
 class Collider : public Node {
     protected:
         ColliderType colliderType;
+        Vector2f min = VectorUtils::zero();
+        Vector2f max = VectorUtils::zero();
     public:
         Collider(Node* _parent, Transform _transform, ColliderType _coliderType);
         ~Collider();
 
-        ColliderType getType();
-        Vector2f getPosition();
-        virtual Vector2f getMin() = 0;
-        virtual Vector2f getMax() = 0;
+        inline ColliderType getType();
+        inline const Vector2f getPosition();
+        inline const float getRotation();
+
+        void setPosition(Vector2f pos);
+        void setRotation(float rot);
+
+        Vector2f getMin();
+        Vector2f getMax();
+
+        virtual void updateBounds() = 0;
 
         virtual bool checkPoint(Vector2f point) = 0;
         virtual vector<Vector2f> getSideVectors() = 0;

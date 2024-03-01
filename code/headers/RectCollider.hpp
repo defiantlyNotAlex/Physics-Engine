@@ -10,8 +10,7 @@ class RectCollider : public Collider {
         RectCollider(Node* _parent, Transform _transform, Vector2f _size);
         ~RectCollider();
 
-        Vector2f getMin();
-        Vector2f getMax();
+        void updateBounds();
         Vector2f getSize();
 
         bool checkPoint(Vector2f point);

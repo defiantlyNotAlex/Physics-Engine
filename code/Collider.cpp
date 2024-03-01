@@ -4,12 +4,33 @@ Collider::Collider(Node* _parent, Transform _transform, ColliderType _colliderTy
     colliderType = _colliderType;
 }
 Collider::~Collider() {}
-ColliderType Collider::getType() {
+
+inline ColliderType Collider::getType() {
     return colliderType;
 }
-Vector2f Collider::getPosition() {
+inline const Vector2f Collider::getPosition() {
     return transform.pos;
 }
+inline const float Collider::getRotation() {
+    return transform.rot;
+}
+Vector2f Collider::getMin() {
+    return min;
+}
+Vector2f Collider::getMax() {
+    return max;
+}
+
+void Collider::setPosition(Vector2f pos) {
+    transform.pos = pos;
+    updateBounds();
+}
+void Collider::setRotation(float rot) {
+    transform.rot = rot;
+    updateBounds();
+}
+
+
 bool Collider::inBounds(Vector2f point) {
     Vector2f thisMin = getMin();
     Vector2f thisMax = getMax();

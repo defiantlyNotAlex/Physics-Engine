@@ -9,24 +9,19 @@ vector<Vector2f>& PolygonCollider::getPoints() {
     return points;
 }
 
-Vector2f PolygonCollider::getMin() {
-    Vector2f bounds = Vector2f(FLT_MAX, FLT_MAX);
+void PolygonCollider::updateBounds() {
+    min = transform.convertLocaltoWorld(points[0]);
+    max = transform.convertLocaltoWorld(points[0]);
     for (Vector2f point : points) {
         auto t_point = transform.convertLocaltoWorld(point);
-        bounds.x = std::min(bounds.x, t_point.x);
-        bounds.y = std::min(bounds.y, t_point.y);
+        min.x = std::min(min.x, t_point.x);
+        min.y = std::min(min.y, t_point.y);
+
+        max.x = std::max(max.x, t_point.x);
+        max.y = std::max(max.y, t_point.y);
     }
-    return bounds;
 }
-Vector2f PolygonCollider::getMax() {
-    Vector2f bounds = Vector2f(FLT_MIN, FLT_MIN);
-    for (Vector2f point : points) {
-        auto t_point = transform.convertLocaltoWorld(point);
-        bounds.x = std::max(bounds.x, t_point.x);
-        bounds.y = std::max(bounds.y, t_point.y);
-    }
-    return bounds;
-}
+
 bool PolygonCollider::checkPoint(Vector2f point) {
     if (!inBounds(point)) return false;
 

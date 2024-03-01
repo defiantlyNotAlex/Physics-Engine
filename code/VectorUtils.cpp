@@ -41,6 +41,9 @@ Vector2f VectorUtils::toFloat(Vector2i A) {
     return Vector2f(A.x, A.y);
 }
 
+size_t VectorUtils::hash(Vector2i A) {
+    return ((size_t)A.x << 32) + (size_t)A.y;
+}
 
 Vector2f VectorUtils::zero() {return Vector2f(0, 0);}
 Vector2f VectorUtils::one() {return Vector2f(1, 1);};

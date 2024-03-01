@@ -7,29 +7,24 @@ RectCollider::RectCollider(Node* _parent, Transform _transform, Vector2f _size) 
     points.push_back(Vector2f (halfSize.x, -halfSize.y));
     points.push_back(Vector2f (halfSize.x, halfSize.y));
     points.push_back(Vector2f (-halfSize.x, halfSize.y));
+    updateBounds();
 }
 
 Vector2f RectCollider::getSize() {
     return size;
 }
 
-Vector2f RectCollider::getMin() {
-    Vector2f bounds = Vector2f(FLT_MAX, FLT_MAX);
+void RectCollider::updateBounds() {
+    min = transform.convertLocaltoWorld(points[0]);
+    max = transform.convertLocaltoWorld(points[0]);
     for (Vector2f point : points) {
         auto t_point = transform.convertLocaltoWorld(point);
-        bounds.x = std::min(bounds.x, t_point.x);
-        bounds.y = std::min(bounds.y, t_point.y);
+        min.x = std::min(min.x, t_point.x);
+        min.y = std::min(min.y, t_point.y);
+
+        max.x = std::max(max.x, t_point.x);
+        max.y = std::max(max.y, t_point.y);
     }
-    return bounds;
-}
-Vector2f RectCollider::getMax() {
-    Vector2f bounds = Vector2f(FLT_MIN, FLT_MIN);
-    for (Vector2f point : points) {
-        auto t_point = transform.convertLocaltoWorld(point);
-        bounds.x = std::max(bounds.x, t_point.x);
-        bounds.y = std::max(bounds.y, t_point.y);
-    }
-    return bounds;
 }
 
 bool RectCollider::checkPoint(Vector2f point) {

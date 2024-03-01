@@ -6,6 +6,8 @@ using sf::Vector2i;
 #include <cmath>
 #include <cfloat>
 #include <algorithm>
+#include <unordered_map>
+using std::unordered_map;
 
 class VectorUtils {
     public:
@@ -35,4 +37,6 @@ class VectorUtils {
         static Vector2i floorToInt(Vector2f A);
         static Vector2i ceilToInt(Vector2f A);
         static Vector2f toFloat(Vector2i A);
+
+        static size_t hash(Vector2i A);
 };

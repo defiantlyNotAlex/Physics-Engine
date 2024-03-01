@@ -2,13 +2,11 @@
 
 CircleCollider::CircleCollider(Node* _parent, Transform _transform, float _radius) : Collider(_parent, _transform, ColliderType::Circle) {
     radius = _radius;
+    updateBounds();
 }
-        
-Vector2f CircleCollider::getMin() {
-    return transform.pos - Vector2f(radius, radius);
-}
-Vector2f CircleCollider::getMax() {
-    return transform.pos + Vector2f(radius, radius);
+void CircleCollider::updateBounds() {
+    min = transform.pos - Vector2f(radius, radius);
+    max = transform.pos + Vector2f(radius, radius);
 }
 
 float CircleCollider::getRadius() {
