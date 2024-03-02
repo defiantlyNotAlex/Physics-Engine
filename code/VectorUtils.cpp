@@ -1,5 +1,8 @@
 #include "headers/VectorUtils.hpp"
 
+Vector2f VectorUtils::perp(Vector2f A) {
+    return Vector2f(-A.y, A.x);
+}
 Vector2f VectorUtils::rotate(Vector2f point, float angle) {
     return Vector2f (point.x * std::cos(angle) - point.y * std::sin(angle),
                     point.x * std::sin(angle) + point.y * std::cos(angle));

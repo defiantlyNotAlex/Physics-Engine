@@ -42,8 +42,10 @@ bool RectCollider::checkPoint(Vector2f point) {
     return true;
 }
 
-vector<Vector2f> RectCollider::getSideVectors() {
-    return {VectorUtils::directionVector(transform.rot), VectorUtils::directionVector(transform.rot + FloatUtils::half_pi)};
+size_t RectCollider::getSideVectors(vector<Vector2f>& out) {
+    out.push_back(VectorUtils::directionVector(transform.rot));
+    out.push_back(VectorUtils::directionVector(transform.rot + FloatUtils::half_pi));
+    return 2;
 }
 void RectCollider::getMaxProjection(Vector2f directionVector, float & min, float & max) {
     for (auto point : points) {

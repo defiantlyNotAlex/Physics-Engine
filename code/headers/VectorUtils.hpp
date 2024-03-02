@@ -19,6 +19,7 @@ class VectorUtils {
         static Vector2f up();
         static Vector2f down();
 
+        static Vector2f perp(Vector2f A);
         static Vector2f rotate(Vector2f point, float angle);
         /// @brief componentwise product of A and B
         static Vector2f componentProd(Vector2f A, Vector2f B);

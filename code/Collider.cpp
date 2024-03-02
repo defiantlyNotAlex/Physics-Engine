@@ -1,4 +1,5 @@
 #include "headers/Collider.hpp"
+#include <iostream>
 
 Collider::Collider(Node* _parent, Transform _transform, ColliderType _colliderType) : Node (_parent, _transform) {
     colliderType = _colliderType;
@@ -48,17 +49,15 @@ bool Collider::overlappingBounds(Collider * col) {
         && thisMin.y < otherMax.y
         && thisMax.y > otherMin.y;
 }
-bool Collider::checkCol(Collider* o_col) {
-    if (!overlappingBounds(o_col)) return false;
+bool Collider::checkCol(Collider* other) {
+    if (!overlappingBounds(other)) return false;
 
     vector<Vector2f> dirVectors;
-    auto displacement = VectorUtils::normalise(o_col->getPosition() - getPosition());
+    auto displacement = VectorUtils::normalise(other->getPosition() - getPosition());
     dirVectors.push_back(displacement);
 
-    auto res = getSideVectors();
-    dirVectors.insert(dirVectors.end(), res.begin(), res.end());
-    res = o_col->getSideVectors();
-    dirVectors.insert(dirVectors.end(), res.begin(), res.end());
+    this->getSideVectors(dirVectors);
+    other->getSideVectors(dirVectors);
 
     for (Vector2f dirVector : dirVectors) {
         float thisMin = FLT_MAX;
@@ -67,10 +66,47 @@ bool Collider::checkCol(Collider* o_col) {
         float otherMin = FLT_MAX;
         float otherMax = -FLT_MAX;
         
-        getMaxProjection(dirVector, thisMin, thisMax);
-        o_col->getMaxProjection(dirVector, otherMin, otherMax);
+        this->getMaxProjection(dirVector, thisMin, thisMax);
+        other->getMaxProjection(dirVector, otherMin, otherMax);
         
         if (!(thisMin < otherMax && thisMax > otherMin)) return false;
     }
     return true;
+}
+
+CollisionManifold Collider::getOverlap(Collider* other) {
+    CollisionManifold res;
+    res.other = other;
+    res.depth = FLT_MAX;
+    res.exists = true;
+    if (!overlappingBounds(other)) {res.exists = false; return res;}
+
+    vector<Vector2f> dirVectors;
+    auto displacement = VectorUtils::normalise(other->getPosition() - getPosition());
+    dirVectors.push_back(displacement);
+
+    this->getSideVectors(dirVectors);
+    other->getSideVectors(dirVectors);
+
+    for (Vector2f dirVector : dirVectors) {
+        float thisMin = FLT_MAX;
+        float thisMax = -FLT_MAX;
+
+        float otherMin = FLT_MAX;
+        float otherMax = -FLT_MAX;
+        
+        this->getMaxProjection(dirVector, thisMin, thisMax);
+        other->getMaxProjection(dirVector, otherMin, otherMax);
+
+        if (thisMax - otherMin < res.depth) {
+            res.normal = -dirVector;
+            res.depth = thisMax - otherMin;
+        } else if (otherMax - thisMin < res.depth){
+            res.normal = dirVector;
+            res.depth = otherMax - thisMin;
+        }
+        
+        //if (!(thisMin < otherMax && thisMax > otherMin)) res.exists = false; return res;
+    }
+    return res;
 }

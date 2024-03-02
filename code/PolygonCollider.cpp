@@ -36,14 +36,13 @@ bool PolygonCollider::checkPoint(Vector2f point) {
     }
     return true;
 }
-vector<Vector2f> PolygonCollider::getSideVectors() {
-    vector<Vector2f> sideVectors;
+size_t PolygonCollider::getSideVectors(vector<Vector2f>& out) {
     for (size_t i = 1; i < points.size(); i++) {
         auto prev = transform.convertLocaltoWorld(points[i-1]);
         auto curr = transform.convertLocaltoWorld(points[i]);
-        sideVectors.push_back(curr - prev);
+        out.push_back(VectorUtils::normalise(curr - prev));   
     }
-    return sideVectors;
+    return points.size();
 }
 void PolygonCollider::getMaxProjection(Vector2f directionVector, float & min, float & max) {
     for (auto point : points) {

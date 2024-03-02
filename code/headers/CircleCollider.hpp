@@ -10,6 +10,6 @@ class CircleCollider : public Collider {
 
         void updateBounds();
         bool checkPoint(Vector2f point);
-        vector<Vector2f> getSideVectors();
+        size_t getSideVectors(vector<Vector2f>& out);
         void getMaxProjection(Vector2f directionVector, float & min, float & max);
 };

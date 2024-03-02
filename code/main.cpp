@@ -16,7 +16,7 @@ int main() {
     sf::RenderWindow window(sf::VideoMode(800, 800), "physics");   
 
     Node* root = new Node(nullptr, Transform({0, 0}));
-    root->addChild(new RectCollider(root, Transform({40, 40}, 1), {40, 40}));
+    root->addChild(new RectCollider(root, Transform({0, 0}, 0), {40, 40}));
     root->addChild(new RectCollider(root, Transform({100, 100}, 1), {50, 50}));
     CircleCollider* D = (CircleCollider*)root->addChild(new CircleCollider(root, Transform({-200, -100}), 10));
     PolygonCollider* C = (PolygonCollider*)root->addChild(new PolygonCollider(root, Transform({-100, -100}), {{-10,-10},{0,-20},{10,-10},{10,10},{-10,10}}));
@@ -31,19 +31,18 @@ int main() {
     RectCollider* A = (RectCollider*)root->children[0];
     RectCollider* B = (RectCollider*)root->children[1];
 
-    PhysicsObject* P = (PhysicsObject*)root->addChild(new PhysicsObject(root, root->transform, A));
-    PhysicsObject* Q = (PhysicsObject*)root->addChild(new PhysicsObject(root, root->transform, B));
-    PhysicsObject* M = (PhysicsObject*)root->addChild(new PhysicsObject(root, root->transform, C));
+    PhysicsObject* P = (PhysicsObject*)root->addChild(new PhysicsObject(root, A->transform, A));
+    PhysicsObject* Q = (PhysicsObject*)root->addChild(new PhysicsObject(root, B->transform, B));
+    PhysicsObject* M = (PhysicsObject*)root->addChild(new PhysicsObject(root, C->transform, C));
 
     sf::Mouse mouse;
-
-    //std::cout << A->overlappingBounds(B->transform.pos, B->getBounds()) << std::endl;
-    std::cout << A->checkCol(B) << std::endl;
 
     sf::Text text;
     text.setFont(font);
     float time = 0;
     int64_t frameCount = 0;
+    bool pressedLastFrame = false;
+
     while (window.isOpen())
     {
         sf::Time deltaTime = deltaClock.restart();
@@ -61,9 +60,15 @@ int main() {
         }
         auto mpos = mouse.getPosition(window);
         auto mouseWorldPos = camera->convertDisplaytoWorld(Vector2f(mpos));
-        if (mouse.isButtonPressed(sf::Mouse::Button::Left)) std::cout << mouseWorldPos.x << " " << mouseWorldPos.y << "\n";
 
-        M->setPosition(mouseWorldPos);
+        if (mouse.isButtonPressed(sf::Mouse::Button::Left) && !pressedLastFrame) {
+            pressedLastFrame = true;
+            M->setPosition(mouseWorldPos);
+        } else if (!mouse.isButtonPressed(sf::Mouse::Button::Left)) {
+            pressedLastFrame = false;
+        }
+
+        
 
         sf::Color aColour = sf::Color::White;
         sf::Color bColour = sf::Color::White;
@@ -74,14 +79,18 @@ int main() {
         if (B->overlappingBounds(C)) bColour = sf::Color::Blue;    
         if (D->overlappingBounds(C)) dColour = sf::Color::Blue;
         
-        if (P->checkOverlap()) aColour = sf::Color::Green;    
-        if (Q->checkOverlap()) bColour = sf::Color::Green;
+        if (P->getOverlap()) aColour = sf::Color::Green;    
+        if (Q->getOverlap()) bColour = sf::Color::Green;
         if (D->checkCol(C)) dColour = sf::Color::Green;
+        //M->applyForce(dt, M->collider->getOverlap(A).normal, M->transform.pos);
+        M->setPosition(M->getPosition() + M->collider->getOverlap(A).normal * M->collider->getOverlap(A).depth);
 
+        
         if (time > 1) {
             text.setString(std::to_string(frameCount));
             frameCount = 0;
             time = 0;
+            std::cout << C->getOverlap(A).normal.x << "," << C->getOverlap(A).normal.y << "," << C->getOverlap(A).depth << std::endl;
         }
         
         window.clear();

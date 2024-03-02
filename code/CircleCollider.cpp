@@ -16,8 +16,8 @@ float CircleCollider::getRadius() {
 bool CircleCollider::checkPoint(Vector2f point) {
     return VectorUtils::magnitudeSqr(transform.pos - point) < radius * radius;
 }
-vector<Vector2f> CircleCollider::getSideVectors() {
-    return {};
+size_t CircleCollider::getSideVectors(vector<Vector2f>& out) {
+    return 0;
 }
 void CircleCollider::getMaxProjection(Vector2f directionVector, float & min, float & max) {
     float projection = VectorUtils::projectScaler(transform.pos, directionVector);
