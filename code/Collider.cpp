@@ -56,8 +56,8 @@ bool Collider::checkCol(Collider* other) {
     auto displacement = VectorUtils::normalise(other->getPosition() - getPosition());
     dirVectors.push_back(displacement);
 
-    this->getSideVectors(dirVectors);
-    other->getSideVectors(dirVectors);
+    this->getEdgeVectors(dirVectors);
+    other->getEdgeVectors(dirVectors);
 
     for (Vector2f dirVector : dirVectors) {
         float thisMin = FLT_MAX;
@@ -85,8 +85,8 @@ CollisionManifold Collider::getOverlap(Collider* other) {
     auto displacement = VectorUtils::normalise(other->getPosition() - getPosition());
     dirVectors.push_back(displacement);
 
-    this->getSideVectors(dirVectors);
-    other->getSideVectors(dirVectors);
+    this->getEdgeVectors(dirVectors);
+    other->getEdgeVectors(dirVectors);
 
     for (Vector2f dirVector : dirVectors) {
         float thisMin = FLT_MAX;

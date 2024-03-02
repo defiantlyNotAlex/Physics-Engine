@@ -36,7 +36,7 @@ bool PolygonCollider::checkPoint(Vector2f point) {
     }
     return true;
 }
-size_t PolygonCollider::getSideVectors(vector<Vector2f>& out) {
+size_t PolygonCollider::getEdgeVectors(vector<Vector2f>& out) {
     for (size_t i = 1; i < points.size(); i++) {
         auto prev = transform.convertLocaltoWorld(points[i-1]);
         auto curr = transform.convertLocaltoWorld(points[i]);
