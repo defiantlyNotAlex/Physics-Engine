@@ -14,6 +14,9 @@ class RectCollider : public Collider {
         Vector2f getSize();
 
         bool checkPoint(Vector2f point);
-        size_t getEdgeVectors(vector<Vector2f>& out);
+        size_t getNormalVectors(vector<Vector2f>& out);
         void getMaxProjection(Vector2f directionVector, float & min, float & max);
+
+        size_t getSupportPoints(Vector2f dir, vector<Vector2f>& support);
+        Edge getBestEdge(Vector2f normal);
 };

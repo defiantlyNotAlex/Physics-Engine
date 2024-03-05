@@ -1,6 +1,7 @@
 #include "headers/Colliders.hpp"
 #include "headers/Camera.hpp"
 #include "headers/PhysicsObject.hpp"
+#include "headers/MouseGrab.hpp"
 #include <iostream>
 #include <SFML/Graphics.hpp>
 #include <SFML/Window/Mouse.hpp>
@@ -16,25 +17,27 @@ int main() {
     sf::RenderWindow window(sf::VideoMode(800, 800), "physics");   
 
     Node* root = new Node(nullptr, Transform({0, 0}));
-    root->addChild(new RectCollider(root, Transform({0, 0}, 0), {40, 40}));
-    root->addChild(new RectCollider(root, Transform({100, 100}, 1), {50, 50}));
+    root->addChild(new RectCollider(root, Transform({0, 140}, 0), {280, 40}));
+    root->addChild(new RectCollider(root, Transform({20, 20}, 1), {50, 50}));
+    RectCollider* E = (RectCollider*)root->addChild(new RectCollider(root, Transform({-40, -10}, 0), {100, 100}));
     CircleCollider* D = (CircleCollider*)root->addChild(new CircleCollider(root, Transform({-200, -100}), 10));
     PolygonCollider* C = (PolygonCollider*)root->addChild(new PolygonCollider(root, Transform({-100, -100}), {{-10,-10},{0,-20},{10,-10},{10,10},{-10,10}}));
     Camera* camera = (Camera*)root->addChild(new Camera(root, &window, Transform({0, 0}, 0), 2));
-
+    MouseGrabber* mg = (MouseGrabber*)root->addChild(new MouseGrabber());
     for (int i = 0; i < 5; i++) {
         for (int j = 0 ; j < 5; j++) {
-            PhysicsObject* A = (PhysicsObject*)root->addChild(new PhysicsObject(root, Transform({i*-10, j*-10}), new RectCollider(A, Transform({i*-10, j*-10}), {10, 10})));
+            //PhysicsObject* A = (PhysicsObject*)root->addChild(new PhysicsObject(root, Transform({i*-10, j*-10}), new RectCollider(A, Transform({i*-10, j*-10}), {10, 10})));
         }
     }
 
     RectCollider* A = (RectCollider*)root->children[0];
     RectCollider* B = (RectCollider*)root->children[1];
 
-    PhysicsObject* P = (PhysicsObject*)root->addChild(new PhysicsObject(root, A->transform, A));
-    PhysicsObject* Q = (PhysicsObject*)root->addChild(new PhysicsObject(root, B->transform, B));
-    PhysicsObject* M = (PhysicsObject*)root->addChild(new PhysicsObject(root, C->transform, C));
-
+    PhysicsObject* P = (PhysicsObject*)root->addChild(new PhysicsObject(root, A->transform, A, 10, 333333));
+    PhysicsObject* Q = (PhysicsObject*)root->addChild(new PhysicsObject(root, B->transform, B, 1, 3333));
+    //PhysicsObject* M = (PhysicsObject*)root->addChild(new PhysicsObject(root, E->transform, E));
+    P->lockPosition = true;
+    //P->lockRotation = true;
     sf::Mouse mouse;
 
     sf::Text text;
@@ -47,9 +50,17 @@ int main() {
     {
         sf::Time deltaTime = deltaClock.restart();
         float dt = deltaTime.asSeconds();
+
+
+        auto mpos = mouse.getPosition(window);
+        auto mouseWorldPos = camera->convertDisplaytoWorld(Vector2f(mpos));        
+        
         time += dt;
         frameCount++;
 
+
+        
+        mg->updatePos(camera);
         root->update(dt);
 
         sf::Event event;
@@ -58,49 +69,27 @@ int main() {
             if (event.type == sf::Event::Closed)
                 window.close();
         }
-        auto mpos = mouse.getPosition(window);
-        auto mouseWorldPos = camera->convertDisplaytoWorld(Vector2f(mpos));
-
-        if (mouse.isButtonPressed(sf::Mouse::Button::Left) && !pressedLastFrame) {
-            pressedLastFrame = true;
-            M->setPosition(mouseWorldPos);
-        } else if (!mouse.isButtonPressed(sf::Mouse::Button::Left)) {
-            pressedLastFrame = false;
-        }
-
         
-
-        sf::Color aColour = sf::Color::White;
-        sf::Color bColour = sf::Color::White;
-        sf::Color cColour = sf::Color::White;
-        sf::Color dColour = sf::Color::White;
-
-        if (A->overlappingBounds(C)) aColour = sf::Color::Blue;    
-        if (B->overlappingBounds(C)) bColour = sf::Color::Blue;    
-        if (D->overlappingBounds(C)) dColour = sf::Color::Blue;
-        
-        if (P->getOverlap()) aColour = sf::Color::Green;    
-        if (Q->getOverlap()) bColour = sf::Color::Green;
-        if (D->checkCol(C)) dColour = sf::Color::Green;
-        //M->applyForce(dt, M->collider->getOverlap(A).normal, M->transform.pos);
-        M->setPosition(M->getPosition() + M->collider->getOverlap(A).normal * M->collider->getOverlap(A).depth);
 
         
         if (time > 1) {
-            text.setString(std::to_string(frameCount));
+            
             frameCount = 0;
             time = 0;
-            std::cout << C->getOverlap(A).normal.x << "," << C->getOverlap(A).normal.y << "," << C->getOverlap(A).depth << std::endl;
         }
-        
+
+        text.setString("mousePos: " + std::to_string(mouseWorldPos.x) + ", " + std::to_string(mouseWorldPos.y));
         window.clear();
-        
+    
         window.draw(text);
-        camera->drawRect(A->transform, A->getSize(), aColour);
-        camera->drawRect(B->transform, B->getSize(), bColour);
-        camera->drawPolygon(C->transform, C->getPoints(), cColour);
-        camera->drawCirc(D->transform, D->getRadius(), dColour);
-        window.display();        
+        camera->drawRect(A->transform, A->getSize());
+        //camera->drawRect(E->transform, E->getSize());
+        camera->drawRect(B->transform, B->getSize());
+        //camera->drawPolygon(C->transform, C->getPoints());
+        camera->drawCirc(D->transform, D->getRadius());
+        window.display(); 
+        
+              
     }
     return 0;
 }

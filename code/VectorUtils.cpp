@@ -1,11 +1,14 @@
 #include "headers/VectorUtils.hpp"
 
-Vector2f VectorUtils::perp(Vector2f A) {
+Vector2f VectorUtils::rotate90_CW(Vector2f A) {
     return Vector2f(-A.y, A.x);
 }
-Vector2f VectorUtils::rotate(Vector2f point, float angle) {
-    return Vector2f (point.x * std::cos(angle) - point.y * std::sin(angle),
-                    point.x * std::sin(angle) + point.y * std::cos(angle));
+Vector2f VectorUtils::rotate90_ACW(Vector2f A) {
+    return Vector2f(A.y, -A.x);
+}
+Vector2f VectorUtils::rotate(Vector2f A, float angle) {
+    return Vector2f (A.x * std::cos(angle) - A.y * std::sin(angle),
+                    A.x * std::sin(angle) + A.y * std::cos(angle));
 }
 float VectorUtils::magnitude(Vector2f A) {
     return std::sqrt(A.x * A.x + A.y * A.y);

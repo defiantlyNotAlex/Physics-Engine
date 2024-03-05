@@ -7,7 +7,11 @@ Camera::Camera(Node* _parent, sf::RenderWindow * _window, Transform _transform, 
 }
 
 void Camera::update(float dt) {
+    
+}
 
+const sf::RenderWindow* Camera::getWindow() {
+    return window;
 }
 
 Vector2f Camera::convertWorldtoDisplay(Vector2f world) {

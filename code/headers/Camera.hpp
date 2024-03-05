@@ -8,6 +8,9 @@ class Camera : public Node {
         float scale;
         sf::RenderWindow* window;
     public:
+
+        const sf::RenderWindow* getWindow();
+    
         Camera(Node* parent, sf::RenderWindow * window, Transform _transform, float _scale);
         Vector2f convertWorldtoDisplay(Vector2f world);
         Vector2f convertDisplaytoWorld(Vector2f display);

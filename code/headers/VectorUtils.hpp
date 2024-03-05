@@ -19,8 +19,12 @@ class VectorUtils {
         static Vector2f up();
         static Vector2f down();
 
-        static Vector2f perp(Vector2f A);
-        static Vector2f rotate(Vector2f point, float angle);
+        /// @brief rotates the vector by 90 degrees in the clockwise direction
+        static Vector2f rotate90_CW(Vector2f A);
+        /// @brief rotates the vector by 90 degrees in an anticlockwise direction
+        static Vector2f rotate90_ACW(Vector2f A);
+        /// @brief rotates a vector about the origin by an arbritrary angle 
+        static Vector2f rotate(Vector2f A, float angle);
         /// @brief componentwise product of A and B
         static Vector2f componentProd(Vector2f A, Vector2f B);
         /// @brief dot product of A and B

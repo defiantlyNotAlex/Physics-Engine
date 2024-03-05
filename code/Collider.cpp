@@ -56,8 +56,8 @@ bool Collider::checkCol(Collider* other) {
     auto displacement = VectorUtils::normalise(other->getPosition() - getPosition());
     dirVectors.push_back(displacement);
 
-    this->getEdgeVectors(dirVectors);
-    other->getEdgeVectors(dirVectors);
+    this->getNormalVectors(dirVectors);
+    other->getNormalVectors(dirVectors);
 
     for (Vector2f dirVector : dirVectors) {
         float thisMin = FLT_MAX;
@@ -76,37 +76,128 @@ bool Collider::checkCol(Collider* other) {
 
 CollisionManifold Collider::getOverlap(Collider* other) {
     CollisionManifold res;
-    res.other = other;
-    res.depth = FLT_MAX;
-    res.exists = true;
-    if (!overlappingBounds(other)) {res.exists = false; return res;}
+    if (!overlappingBounds(other)) return res;
 
-    vector<Vector2f> dirVectors;
+    vector<Vector2f> normalVectors;
     auto displacement = VectorUtils::normalise(other->getPosition() - getPosition());
-    dirVectors.push_back(displacement);
+    normalVectors.push_back(displacement);
 
-    this->getEdgeVectors(dirVectors);
-    other->getEdgeVectors(dirVectors);
+    this->getNormalVectors(normalVectors);
+    other->getNormalVectors(normalVectors);
 
-    for (Vector2f dirVector : dirVectors) {
+    for (size_t i = 0; i < normalVectors.size(); i++) {
+        Vector2f d = normalVectors[i];
+
         float thisMin = FLT_MAX;
         float thisMax = -FLT_MAX;
 
         float otherMin = FLT_MAX;
         float otherMax = -FLT_MAX;
-        
-        this->getMaxProjection(dirVector, thisMin, thisMax);
-        other->getMaxProjection(dirVector, otherMin, otherMax);
 
-        if (thisMax - otherMin < res.depth) {
-            res.normal = -dirVector;
-            res.depth = thisMax - otherMin;
-        } else if (otherMax - thisMin < res.depth){
-            res.normal = dirVector;
-            res.depth = otherMax - thisMin;
+        this->getMaxProjection(d, thisMin, thisMax);
+        other->getMaxProjection(d, otherMin, otherMax);
+
+        if (i == 0 || thisMax - otherMin < res.depth || otherMax - thisMin < res.depth) {
+            if (thisMax - otherMin < otherMax - thisMin) {
+                res.normal = -d;
+                res.depth = thisMax - otherMin;
+            } else {
+                res.normal = d;
+                res.depth = otherMax - thisMin;
+            }
         }
-        
-        //if (!(thisMin < otherMax && thisMax > otherMin)) res.exists = false; return res;
     }
+    if (res.depth <= 0) {return res;}
+    std::optional<Vector2f> contact = getContactPoint(other, res.normal);
+    if (contact.has_value()) {
+        res.exists = true;
+        res.contact = contact.value();
+    } else {
+        res.exists = false;
+        return res;
+    }
+    
     return res;
+}
+vector<Vector2f> Collider::clipPoints(Vector2f start, Vector2f end, Vector2f normal, float dot) {
+    vector<Vector2f> clippedPoints;
+    float startDot = VectorUtils::dotProd(start, normal) - dot;
+    float endDot = VectorUtils::dotProd(end, normal) - dot;
+
+    if (startDot >= 0.0) clippedPoints.push_back(start);
+    if (endDot >= 0.0) clippedPoints.push_back(end);
+
+    if (startDot * endDot < 0.0) {
+        const Vector2f edge = end - start;
+        const float t = startDot / (startDot - endDot);
+
+        clippedPoints.push_back(start + (t * edge));
+    }
+    return clippedPoints;
+}
+std::optional<Vector2f> Collider::getContactPoint(Collider* other, Vector2f dir) {
+    auto edgeThis = this->getBestEdge(-dir);
+    auto edgeOther = other->getBestEdge(dir);
+
+    //edgeThis.printEdge();
+    //edgeOther.printEdge();
+
+    Edge reference;
+    Edge incident;
+    bool flip = false;
+
+    if (std::abs(VectorUtils::dotProd(edgeThis.edgeVector(), dir)) <= std::abs(VectorUtils::dotProd(edgeOther.edgeVector(), dir))) {
+        reference = edgeThis;
+        incident = edgeOther;
+    } else {
+        reference = edgeOther;
+        incident = edgeThis;
+        // flips the incident normal for the final result
+        flip = true;
+    }
+
+    auto referenceEdge = VectorUtils::normalise(reference.edgeVector());
+
+    float referenceStartDot = VectorUtils::dotProd(referenceEdge, reference.start);
+    auto clippedPoints = Collider::clipPoints(incident.start, incident.end, referenceEdge, referenceStartDot);
+    if (clippedPoints.size() < 2) {
+        if (clippedPoints.size() == 0) {
+            return {};
+        }
+        return clippedPoints[0];
+    }
+
+    float referenceEndDot = VectorUtils::dotProd(referenceEdge, reference.end);
+    clippedPoints = Collider::clipPoints(clippedPoints[0], clippedPoints[1], -referenceEdge, -referenceEndDot);
+    if (clippedPoints.size() < 2) {
+        if (clippedPoints.size() == 0) {
+            return {};
+        }
+        return clippedPoints[0];
+    }
+    
+    Vector2f referenceNormal = VectorUtils::rotate90_ACW(referenceEdge);
+    if (flip) {referenceNormal *= -1.0f;}
+
+    float max = VectorUtils::dotProd(referenceNormal, reference.best);
+
+
+    if (VectorUtils::dotProd(referenceNormal, clippedPoints.front()) - max < 0.0) {
+        clippedPoints.front() = clippedPoints.back();
+        clippedPoints.pop_back();
+    }
+    if (VectorUtils::dotProd(referenceNormal, clippedPoints.back()) - max < 0.0) {
+        clippedPoints.pop_back();
+    }
+
+    if (clippedPoints.size() == 0) {
+        return {};
+    }
+
+    Vector2f averagePoint = VectorUtils::zero();
+    for (Vector2f cp : clippedPoints) {
+        averagePoint += cp;
+    }
+
+    return averagePoint / (float)clippedPoints.size();
 }
