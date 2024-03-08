@@ -30,8 +30,6 @@ void Collider::setRotation(float rot) {
     transform.rot = rot;
     updateBounds();
 }
-
-
 bool Collider::inBounds(Vector2f point) {
     Vector2f thisMin = getMin();
     Vector2f thisMax = getMax();
@@ -85,6 +83,8 @@ CollisionManifold Collider::getOverlap(Collider* other) {
     this->getNormalVectors(normalVectors);
     other->getNormalVectors(normalVectors);
 
+    Vector2f secondBestNormal = VectorUtils::zero();
+
     for (size_t i = 0; i < normalVectors.size(); i++) {
         Vector2f d = normalVectors[i];
 
@@ -107,14 +107,11 @@ CollisionManifold Collider::getOverlap(Collider* other) {
             }
         }
     }
-    if (res.depth <= 0) {return res;}
-    std::optional<Vector2f> contact = getContactPoint(other, res.normal);
-    if (contact.has_value()) {
-        res.exists = true;
-        res.contact = contact.value();
+
+    if (this->colliderType == ColliderType::Circle || other->colliderType == ColliderType::Circle) {
+        res.contact = getSupportPoint(res.normal);
     } else {
-        res.exists = false;
-        return res;
+        res.contact = getContactPoint(other, res.normal);
     }
     
     return res;
@@ -135,18 +132,15 @@ vector<Vector2f> Collider::clipPoints(Vector2f start, Vector2f end, Vector2f nor
     }
     return clippedPoints;
 }
-std::optional<Vector2f> Collider::getContactPoint(Collider* other, Vector2f dir) {
-    auto edgeThis = this->getBestEdge(-dir);
-    auto edgeOther = other->getBestEdge(dir);
-
-    //edgeThis.printEdge();
-    //edgeOther.printEdge();
+std::optional<Vector2f> Collider::getContactPoint(Collider* other, Vector2f normal) {
+    auto edgeThis = this->getBestEdge(-normal);
+    auto edgeOther = other->getBestEdge(normal);
 
     Edge reference;
     Edge incident;
     bool flip = false;
 
-    if (std::abs(VectorUtils::dotProd(edgeThis.edgeVector(), dir)) <= std::abs(VectorUtils::dotProd(edgeOther.edgeVector(), dir))) {
+    if (std::abs(VectorUtils::dotProd(edgeThis.edgeVector(), normal)) <= std::abs(VectorUtils::dotProd(edgeOther.edgeVector(), normal))) {
         reference = edgeThis;
         incident = edgeOther;
     } else {

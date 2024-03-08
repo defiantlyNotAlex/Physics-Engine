@@ -25,9 +25,8 @@ void CircleCollider::getMaxProjection(Vector2f directionVector, float & min, flo
     max = projection + radius;
 }
 
-size_t CircleCollider::getSupportPoints(Vector2f dir, vector<Vector2f>& support) {
-    support.push_back({dir * radius + transform.pos});
-    return 1;
+Vector2f CircleCollider::getSupportPoint(Vector2f normal) {
+    return normal * radius + transform.pos;
 }
 Edge CircleCollider::getBestEdge(Vector2f normal) {
     const Vector2f point = transform.pos + normal * radius;

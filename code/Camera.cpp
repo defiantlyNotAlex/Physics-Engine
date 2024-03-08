@@ -37,13 +37,13 @@ void Camera::drawRect(Transform rectTransform, Vector2f size, sf::Color colour, 
 }
 void Camera::drawCirc(Transform circtTransform, float radius, sf::Color colour, sf::Texture* sprite) {
     sf::CircleShape circ(radius * scale);
-    circ.setOrigin(VectorUtils::one() * radius * scale / 2.f);
+    circ.setOrigin(VectorUtils::one() * radius * scale);
     circ.setRotation(FloatUtils::radToDegree(circtTransform.rot));
     circ.setFillColor(colour);
     if (sprite) {
         circ.setTexture(sprite);
     }
-    circ.setPosition(convertWorldtoDisplay(circtTransform.pos) - circ.getOrigin());
+    circ.setPosition(convertWorldtoDisplay(circtTransform.pos));
     window->draw(circ);
 }
 void Camera::drawPolygon(Transform polygonTransform, vector<Vector2f> & points, sf::Color colour, sf::Texture* sprite) {

@@ -53,23 +53,17 @@ void PolygonCollider::getMaxProjection(Vector2f directionVector, float & min, fl
     }
 }
 
-size_t PolygonCollider::getSupportPoints(Vector2f dir, vector<Vector2f>& support) {
+Vector2f PolygonCollider::getSupportPoint(Vector2f normal) {
     float max;
-    vector<size_t> indexes;
+    size_t index;
     for (size_t i = 0; i < points.size(); i++) {
-        float d = VectorUtils::dotProd(dir, points[i]);
-        if (i == 0 || d > max - FloatUtils::epsilon) {
-            if (std::abs(d - max) > FloatUtils::epsilon) {
-                indexes.clear();
-                max = d;
-            }
-            indexes.push_back(i);
+        float d = VectorUtils::dotProd(normal, points[i]);
+        if (i == 0 || d > max) {
+            max = d;
+            index = i;
         }
     }
-    for (size_t index : indexes) {
-        support.push_back(points[index]);
-    }
-    return indexes.size();
+    return points[index];
 }
 Edge PolygonCollider::getBestEdge(Vector2f normal) {
     float max;

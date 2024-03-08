@@ -14,7 +14,7 @@ int main() {
     }
 
     sf::Clock deltaClock;
-    sf::RenderWindow window(sf::VideoMode(800, 800), "physics");   
+    sf::RenderWindow window(sf::VideoMode(1200, 1000), "physics");   
 
     Node* root = new Node(nullptr, Transform({0, 0}));
     root->addChild(new RectCollider(root, Transform({0, 140}, 0), {280, 40}));
@@ -22,7 +22,7 @@ int main() {
     RectCollider* E = (RectCollider*)root->addChild(new RectCollider(root, Transform({-40, -10}, 0), {100, 100}));
     CircleCollider* D = (CircleCollider*)root->addChild(new CircleCollider(root, Transform({-200, -100}), 10));
     PolygonCollider* C = (PolygonCollider*)root->addChild(new PolygonCollider(root, Transform({-100, -100}), {{-10,-10},{0,-20},{10,-10},{10,10},{-10,10}}));
-    Camera* camera = (Camera*)root->addChild(new Camera(root, &window, Transform({0, 0}, 0), 2));
+    Camera* camera = (Camera*)root->addChild(new Camera(root, &window, Transform({0, 0}, 0), 1));
     MouseGrabber* mg = (MouseGrabber*)root->addChild(new MouseGrabber());
     for (int i = 0; i < 5; i++) {
         for (int j = 0 ; j < 5; j++) {
@@ -33,9 +33,10 @@ int main() {
     RectCollider* A = (RectCollider*)root->children[0];
     RectCollider* B = (RectCollider*)root->children[1];
 
-    PhysicsObject* P = (PhysicsObject*)root->addChild(new PhysicsObject(root, A->transform, A, 10, 333333));
+    PhysicsObject* P = (PhysicsObject*)root->addChild(new PhysicsObject(root, A->transform, A, 10, 33333));
     PhysicsObject* Q = (PhysicsObject*)root->addChild(new PhysicsObject(root, B->transform, B, 1, 3333));
-    //PhysicsObject* M = (PhysicsObject*)root->addChild(new PhysicsObject(root, E->transform, E));
+    PhysicsObject* M = (PhysicsObject*)root->addChild(new PhysicsObject(root, D->transform, D, 1, 1000));
+    PhysicsObject* K = (PhysicsObject*)root->addChild(new PhysicsObject(root, C->transform, C, 1, 1000));
     P->lockPosition = true;
     //P->lockRotation = true;
     sf::Mouse mouse;
@@ -85,7 +86,7 @@ int main() {
         camera->drawRect(A->transform, A->getSize());
         //camera->drawRect(E->transform, E->getSize());
         camera->drawRect(B->transform, B->getSize());
-        //camera->drawPolygon(C->transform, C->getPoints());
+        camera->drawPolygon(C->transform, C->getPoints());
         camera->drawCirc(D->transform, D->getRadius());
         window.display(); 
         

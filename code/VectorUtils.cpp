@@ -25,8 +25,17 @@ Vector2f VectorUtils::componentProd(Vector2f A, Vector2f B) {
 float VectorUtils::dotProd(Vector2f A, Vector2f B) {
     return A.x * B.x + A.y * B.y;
 }
+float VectorUtils::dotProd(Vector3f A, Vector3f B) {
+    return A.x * B.x + A.y * B.y + A.z * B.z;
+}
 float VectorUtils::crossProd(Vector2f A, Vector2f B) {
     return A.x * B.y - A.y * B.x;
+}
+Vector3f VectorUtils::crossProd(Vector3f A, Vector3f B) {
+    return Vector3f (A.y * B.z - A.z * B.y, A.z * B.x - A.x * B.z, A.x * B.y - A.y * B.x);
+}
+Vector3f VectorUtils::convertTo3D(Vector2f A) {
+    return Vector3f(A.x, A.y, 0);
 }
 Vector2f VectorUtils::project(Vector2f A, Vector2f B) {
     return VectorUtils::dotProd(A, B) * B;
@@ -49,6 +58,16 @@ Vector2f VectorUtils::toFloat(Vector2i A) {
 
 size_t VectorUtils::hash(Vector2i A) {
     return ((size_t)A.x << 32) + (size_t)A.y;
+}
+
+string VectorUtils::toString(Vector2f A) {
+    return "(" + std::to_string(A.x) + ", " + std::to_string(A.y) + ")";
+}
+string VectorUtils::toString(Vector3f A) {
+    return "(" + std::to_string(A.x) + ", " + std::to_string(A.y)+ ", " + std::to_string(A.z) + ")";
+}
+string VectorUtils::toString(Vector2i A) {
+    return "(" + std::to_string(A.x) + ", " + std::to_string(A.y) + ")";
 }
 
 Vector2f VectorUtils::zero() {return Vector2f(0, 0);}

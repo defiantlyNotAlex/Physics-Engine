@@ -2,9 +2,9 @@
 
 vector<PhysicsObject*>* PhysicsObject::objectList = new vector<PhysicsObject*>;
 
-float PhysicsObject::gravity = 40;
-float PhysicsObject::drag = 0.001; 
-float PhysicsObject::angularDrag = 0.1;
+float PhysicsObject::gravity = 10;
+float PhysicsObject::drag = 0.01; 
+float PhysicsObject::angularDrag = 2;
 
 
 PhysicsObject::PhysicsObject(Node* _parent, Transform _transform, Collider* _collider, float _mass, float _inertia) : Node (_parent, _transform) {
@@ -14,7 +14,7 @@ PhysicsObject::PhysicsObject(Node* _parent, Transform _transform, Collider* _col
     angularVelocity = 0;
     mass = _mass;
     inertia = _inertia;
-    material.elasticity = 1;
+    material.elasticity = 0;
     material.friction = 0.2;
 }
 PhysicsObject::~PhysicsObject() {
@@ -38,19 +38,20 @@ void PhysicsObject::setRotation(float rot) {
     transform.rot = rot;
     collider->setRotation(rot);
 }
-Vector2f PhysicsObject::getLinearMomentumAtPoint(Vector2f point) {
-    return velocity * mass + angularVelocity * VectorUtils::rotate90_CW(point - transform.pos);
+Vector2f PhysicsObject::getLinearVel(Vector2f point) {
+    Vector2f displacement = point - getPosition();
+    return velocity + angularVelocity * VectorUtils::rotate90_CW(displacement);
 }
 void PhysicsObject::update(float dt) {
-    applyForce(dt, VectorUtils::down() * gravity, transform.pos);
+    applyForce(dt, VectorUtils::down() * gravity * this->mass, transform.pos);
     move(dt);
 }
 
 void PhysicsObject::move(float dt) {
     if (lockPosition) velocity = VectorUtils::zero();
     if (lockRotation) angularVelocity = 0;
-    velocity -= drag * velocity * VectorUtils::magnitude(velocity) * dt;
-    angularVelocity -= angularDrag * angularVelocity * dt;
+    applyForce(dt, -velocity * VectorUtils::magnitude(velocity) * drag, this->getPosition());
+    applyTorque(dt, -angularDrag * angularVelocity * angularVelocity);
 
     auto pos = transform.pos;
     auto rot = transform.rot;
@@ -68,20 +69,39 @@ void PhysicsObject::move(float dt) {
     PhysicsObject* other = getOverlap();
     if (other) {
         CollisionManifold cm = collider->getOverlap(other->collider);
-
-        if (!cm.exists) {
+        
+        if (!cm.contact.has_value()) {
+            std::cout << cm.depth << std::endl;
+            std::cout << "no point" << std::endl;
+            std::cout << VectorUtils::toString(cm.normal) << std::endl;
+            //exit(1);
             return;
         }
         this->setPosition(this->getPosition() + cm.normal * cm.depth);
+        Vector2f contact = cm.contact.value();
 
-        Vector2f relativeVel = this->getLinearMomentumAtPoint(cm.contact) - other->getLinearMomentumAtPoint(cm.contact);
+        const Vector2f v_r = other->getLinearVel(contact) - this->getLinearVel(contact);
+        const Vector2f displacement = other->getPosition() - this->getPosition();
+    
+        const Vector3f r_this = VectorUtils::convertTo3D(contact - this->getPosition());
+        const Vector3f r_other = VectorUtils::convertTo3D(contact - other->getPosition());
+        const Vector3f normal3D = VectorUtils::convertTo3D(cm.normal);
 
-        Vector2f force = VectorUtils::project(-relativeVel, cm.normal);
-        float totalElasticity = this->material.elasticity * other->material.elasticity;
-        float elasticiyFactor = (totalElasticity + 1.f) / 2.f;
-        
-        this->applyForce(1, force * elasticiyFactor, cm.contact);
-        other->applyForce(1, -force  * elasticiyFactor, cm.contact);
+        const float m_this_inv = 1.f / this->mass;
+        const float m_other_inv = 1.f / other->mass;
+
+        const float I_this_inv = 1.f / this->inertia;
+        const float I_other_inv = 1.f / other->inertia;
+
+        const Vector3f L_this = I_this_inv * VectorUtils::crossProd(VectorUtils::crossProd(r_this, normal3D), r_this);
+        const Vector3f L_other = I_other_inv * VectorUtils::crossProd(VectorUtils::crossProd(r_other, normal3D), r_other);
+
+        float elasticicity = 0;
+        const float impulseReaction = -(1 + elasticicity) * VectorUtils::dotProd(v_r, cm.normal) 
+            / (m_this_inv + m_other_inv + VectorUtils::dotProd(L_this +  L_other, normal3D));
+
+        this->applyForce(1, -impulseReaction * cm.normal, contact);
+        other->applyForce(1, impulseReaction * cm.normal, contact);
     }
 }
 void PhysicsObject::applyForce(float dt, Vector2f force, Vector2f forcePos) {
@@ -101,30 +121,6 @@ PhysicsObject* const PhysicsObject::getOverlap() {
     }
     return nullptr;
 }
-/// @brief returns a list of all PhysicsObjects which overlap
-/// @return returns the array of PhysicsObjects which are colliding
-vector<PhysicsObject*> const PhysicsObject::getAllOverlap() {
-    vector<PhysicsObject*> returnArray;
-    for (PhysicsObject* other : *objectList) {
-        if (other != this && this->collider->checkCol(other->collider)) {
-            returnArray.push_back(other);
-        }
-    }
-    return returnArray;
-}
-/// @brief returns a list of all PhysicsObjects which overlap without memery allocation
-/// @param out the output parameter
-/// @return returns the number of PhysicsObjects which are colliding
-size_t const PhysicsObject::getAllOverlapNoAlloc(vector<PhysicsObject*>& out) {
-    out.clear();
-    for (PhysicsObject* other : *objectList) {
-        if (other != this && this->collider->checkCol(other->collider)) {
-            out.push_back(other);
-        }
-    }
-    return out.size();
-}
-
 bool const PhysicsObject::checkPoint(Vector2f point) {
     for (PhysicsObject* other : *objectList) {
         if (other != this && other->collider->checkPoint(point)) {
@@ -140,31 +136,4 @@ PhysicsObject* PhysicsObject::getObjectAtPoint(Vector2f point) {
         }
     }
     return nullptr;
-}
-bool const PhysicsObject::rayCast(Vector2f s_pos, Vector2f step, float maxRaycastDistance) {
-    for (Vector2f pos = s_pos; VectorUtils::magnitude(pos - s_pos) < maxRaycastDistance; pos += step) {
-        if (checkPoint(pos)) {
-            return true;
-        }
-    }
-    return false;
-}
-bool const PhysicsObject::rayCastGetPos(Vector2f s_pos, Vector2f step, Vector2f & out, float maxRaycastDistance) {
-    const int binSearchDepth = 4;
-    for (Vector2f pos = s_pos; VectorUtils::magnitude(pos - s_pos) < maxRaycastDistance; pos += step) {
-        if (checkPoint(pos)) {
-            for (int search = 0; search < binSearchDepth; ++search) {
-                if (search == 0 || checkPoint(pos)) {
-                    step /= 2.f;
-                    pos -= step;
-                } else {
-                    step /= 2.f;
-                    pos += step;
-                }
-            }
-            out = pos;
-            return true;
-        }
-    }
-    return false;
 }

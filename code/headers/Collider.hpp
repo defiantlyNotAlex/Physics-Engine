@@ -1,6 +1,7 @@
 #pragma once
 #include "Node.hpp"
 #include "Collision.hpp"
+#include "Shapes.hpp"
 #include <optional>
 #include <vector>
 using std::vector;
@@ -38,7 +39,7 @@ class Collider : public Node {
         virtual void updateBounds() = 0;
 
         virtual bool checkPoint(Vector2f point) = 0;
-        virtual size_t getSupportPoints(Vector2f dir, vector<Vector2f>& support) = 0;
+        virtual Vector2f getSupportPoint(Vector2f normal) = 0;
 
         virtual size_t getNormalVectors(vector<Vector2f>& out) = 0;
         virtual void getMaxProjection(Vector2f directionVector, float & min, float & max) = 0;
@@ -49,6 +50,6 @@ class Collider : public Node {
         bool checkCol(Collider * other);
 
         CollisionManifold getOverlap(Collider* other);
-        std::optional<Vector2f> getContactPoint(Collider* other, Vector2f dir);
+        std::optional<Vector2f> getContactPoint(Collider* other, Vector2f normal);
         
 };

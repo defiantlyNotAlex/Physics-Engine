@@ -36,20 +36,14 @@ class PhysicsObject : public Node {
         void applyForce(float dt, Vector2f force, Vector2f forcePos);
         void applyTorque(float dt, float torque);
 
-        void updateChunks();
-
         Vector2f getPosition();
         void setPosition(Vector2f pos);
         float getRotation();
         void setRotation(float rot);
-        Vector2f getLinearMomentumAtPoint(Vector2f point);
+        
+        Vector2f getLinearVel(Vector2f point);
 
-        Vector2f const findOverlapPoint(PhysicsObject* other);
         PhysicsObject* const getOverlap();
-        vector<PhysicsObject*> const getAllOverlap();
-        size_t const getAllOverlapNoAlloc(vector<PhysicsObject*>& out);
         bool const checkPoint(Vector2f point);
         static PhysicsObject* getObjectAtPoint(Vector2f point);
-        bool const rayCast(Vector2f pos, Vector2f step, float maxRaycastDistance = 10);
-        bool const rayCastGetPos(Vector2f s_pos, Vector2f step, Vector2f & out, float maxRaycastDistance = 10);
 };

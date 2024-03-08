@@ -56,25 +56,6 @@ void RectCollider::getMaxProjection(Vector2f directionVector, float & min, float
     }
 }
 
-size_t RectCollider::getSupportPoints(Vector2f dir, vector<Vector2f>& support) {
-    float max;
-    vector<size_t> indexes;
-    for (size_t i = 0; i < points.size(); i++) {
-        float d = VectorUtils::dotProd(dir, points[i]);
-        if (i == 0 || d > max - FloatUtils::epsilon) {
-            if (std::abs(d - max) > FloatUtils::epsilon) {
-                indexes.clear();
-                max = d;
-            }
-            indexes.push_back(i);
-        }
-    }
-    for (size_t index : indexes) {
-        support.push_back(points[index]);
-    }
-    return indexes.size();
-}
-
 Edge RectCollider::getBestEdge(Vector2f normal) {
     float max;
     size_t max_vert;
@@ -85,18 +66,31 @@ Edge RectCollider::getBestEdge(Vector2f normal) {
             max_vert = i;
         }
     }
-    size_t next_vert = (max_vert+1)%points.size();
-    size_t prev_vert = (max_vert+points.size()-1)%points.size();
+    const size_t next_vert = (max_vert+1)%points.size();
+    const size_t prev_vert = (max_vert+points.size()-1)%points.size();
 
-    auto prev_point = transform.convertLocaltoWorld(points[prev_vert]);
-    auto next_point = transform.convertLocaltoWorld(points[next_vert]);
-    auto max_point = transform.convertLocaltoWorld(points[max_vert]);
+    const auto prev_point = transform.convertLocaltoWorld(points[prev_vert]);
+    const auto next_point = transform.convertLocaltoWorld(points[next_vert]);
+    const auto max_point = transform.convertLocaltoWorld(points[max_vert]);
 
-    Vector2f l = VectorUtils::normalise(max_point - next_point);
-    Vector2f r = VectorUtils::normalise(max_point - prev_point);
+    const Vector2f l = VectorUtils::normalise(max_point - next_point);
+    const Vector2f r = VectorUtils::normalise(max_point - prev_point);
 
     if (std::abs(VectorUtils::dotProd(r, normal)) <= std::abs(VectorUtils::dotProd(l, normal))) {
         return Edge(prev_point, max_point, max_point);
     }
     return Edge(max_point, next_point, max_point);
+}
+
+Vector2f RectCollider::getSupportPoint(Vector2f normal) {
+    float max;
+    size_t index;
+    for (size_t i = 0; i < points.size(); i++) {
+        float d = VectorUtils::dotProd(normal, points[i]);
+        if (i == 0 || d > max) {
+            max = d;
+            index = i;
+        }
+    }
+    return points[index];
 }
