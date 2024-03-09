@@ -5,7 +5,7 @@
 
 class PhysicsObject : public Node {
     private:
-
+        void Collision(float dt, PhysicsObject* other);
     public:
         static vector<PhysicsObject*>* objectList;
 
@@ -40,10 +40,11 @@ class PhysicsObject : public Node {
         void setPosition(Vector2f pos);
         float getRotation();
         void setRotation(float rot);
-        
+
         Vector2f getLinearVel(Vector2f point);
 
         PhysicsObject* const getOverlap();
+        vector<PhysicsObject*> const getAllOverlap();
         bool const checkPoint(Vector2f point);
         static PhysicsObject* getObjectAtPoint(Vector2f point);
 };

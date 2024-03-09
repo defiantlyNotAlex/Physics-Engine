@@ -2,8 +2,8 @@
 
 vector<PhysicsObject*>* PhysicsObject::objectList = new vector<PhysicsObject*>;
 
-float PhysicsObject::gravity = 10;
-float PhysicsObject::drag = 0.01; 
+float PhysicsObject::gravity = 100;
+float PhysicsObject::drag = 0.001; 
 float PhysicsObject::angularDrag = 2;
 
 
@@ -50,6 +50,8 @@ void PhysicsObject::update(float dt) {
 void PhysicsObject::move(float dt) {
     if (lockPosition) velocity = VectorUtils::zero();
     if (lockRotation) angularVelocity = 0;
+
+    //if (lockPosition && lockRotation) return;
     applyForce(dt, -velocity * VectorUtils::magnitude(velocity) * drag, this->getPosition());
     applyTorque(dt, -angularDrag * angularVelocity * angularVelocity);
 
@@ -66,47 +68,53 @@ void PhysicsObject::move(float dt) {
         transform.rot = rotateTo;
         collider->setRotation(rotateTo);
     }
-    PhysicsObject* other = getOverlap();
-    if (other) {
-        CollisionManifold cm = collider->getOverlap(other->collider);
-        
-        if (!cm.contact.has_value()) {
-            std::cout << cm.depth << std::endl;
-            std::cout << "no point" << std::endl;
-            std::cout << VectorUtils::toString(cm.normal) << std::endl;
-            //exit(1);
-            return;
-        }
-        this->setPosition(this->getPosition() + cm.normal * cm.depth);
-        Vector2f contact = cm.contact.value();
+    vector<PhysicsObject*> others = getAllOverlap();
+    for (PhysicsObject* other : others) {
+        Collision(dt, other);
+    } 
+}
+void PhysicsObject::Collision(float dt, PhysicsObject* other) {
+    CollisionManifold cm = collider->getOverlap(other->collider);
 
-        const Vector2f v_r = other->getLinearVel(contact) - this->getLinearVel(contact);
-        const Vector2f displacement = other->getPosition() - this->getPosition();
-    
-        const Vector3f r_this = VectorUtils::convertTo3D(contact - this->getPosition());
-        const Vector3f r_other = VectorUtils::convertTo3D(contact - other->getPosition());
-        const Vector3f normal3D = VectorUtils::convertTo3D(cm.normal);
-
-        const float m_this_inv = 1.f / this->mass;
-        const float m_other_inv = 1.f / other->mass;
-
-        const float I_this_inv = 1.f / this->inertia;
-        const float I_other_inv = 1.f / other->inertia;
-
-        const Vector3f L_this = I_this_inv * VectorUtils::crossProd(VectorUtils::crossProd(r_this, normal3D), r_this);
-        const Vector3f L_other = I_other_inv * VectorUtils::crossProd(VectorUtils::crossProd(r_other, normal3D), r_other);
-
-        float elasticicity = 0;
-        const float impulseReaction = -(1 + elasticicity) * VectorUtils::dotProd(v_r, cm.normal) 
-            / (m_this_inv + m_other_inv + VectorUtils::dotProd(L_this +  L_other, normal3D));
-
-        this->applyForce(1, -impulseReaction * cm.normal, contact);
-        other->applyForce(1, impulseReaction * cm.normal, contact);
+    this->setPosition(this->getPosition() + cm.normal * cm.depth);
+    if (!cm.contact.has_value()) {
+        std::cout << cm.depth << std::endl;
+        std::cout << "no point" << std::endl;
+        std::cout << VectorUtils::toString(cm.normal) << std::endl;
+        //exit(1);
+        return;
     }
+    
+    Vector2f contact = cm.contact.value();
+
+    const Vector2f v_r = other->getLinearVel(contact) - this->getLinearVel(contact);
+    const Vector2f displacement = other->getPosition() - this->getPosition();
+
+    const Vector3f r_this = VectorUtils::convertTo3D(contact - this->getPosition());
+    const Vector3f r_other = VectorUtils::convertTo3D(contact - other->getPosition());
+    const Vector3f normal3D = VectorUtils::convertTo3D(cm.normal);
+
+    const float m_this_inv = 1.f / this->mass;
+    const float m_other_inv = 1.f / other->mass;
+
+    const float I_this_inv = 1.f / this->inertia;
+    const float I_other_inv = 1.f / other->inertia;
+
+    const Vector3f L_this = I_this_inv * VectorUtils::crossProd(VectorUtils::crossProd(r_this, normal3D), r_this);
+    const Vector3f L_other = I_other_inv * VectorUtils::crossProd(VectorUtils::crossProd(r_other, normal3D), r_other);
+
+    float elasticicityCoef = this->material.elasticity * other->material.elasticity;
+    const float impulseReaction = -(1 + elasticicityCoef) * VectorUtils::dotProd(v_r, cm.normal) 
+        / (m_this_inv + m_other_inv + VectorUtils::dotProd(L_this +  L_other, normal3D));
+
+    this->applyForce(1, -impulseReaction * cm.normal, contact);
+    other->applyForce(1, impulseReaction * cm.normal, contact);
 }
 void PhysicsObject::applyForce(float dt, Vector2f force, Vector2f forcePos) {
     velocity += dt * force / mass;
     angularVelocity += dt * VectorUtils::crossProd(forcePos - transform.pos, force) / inertia;
+    if (lockPosition) velocity = VectorUtils::zero();
+    if (lockRotation) angularVelocity = 0;
 }
 void PhysicsObject::applyTorque(float dt, float torque) {
     angularVelocity += torque * dt / inertia;
@@ -120,6 +128,15 @@ PhysicsObject* const PhysicsObject::getOverlap() {
         }
     }
     return nullptr;
+}
+vector<PhysicsObject*> const PhysicsObject::getAllOverlap() {
+    vector<PhysicsObject*> returnArray;
+    for (PhysicsObject* other : *objectList) {
+        if (other != this && this->collider->checkCol(other->collider)) {
+            returnArray.push_back(other);
+        }
+    }
+    return returnArray;
 }
 bool const PhysicsObject::checkPoint(Vector2f point) {
     for (PhysicsObject* other : *objectList) {

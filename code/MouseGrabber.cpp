@@ -7,7 +7,7 @@ void MouseGrabber::updatePos(Camera * camera) {
 void MouseGrabber::update(float dt) {
     if (grabbed) {
         Vector2f grab = grabbed->transform.convertLocaltoWorld(posGrabbed);
-        grabbed->applyForce(dt, 2.f * PhysicsObject::gravity * (mousePos - grab), grab);
+        grabbed->applyForce(dt, 2.f * (mousePos - grab), grab);
     }
 
     if (sf::Mouse::isButtonPressed(sf::Mouse::Button::Left)) {

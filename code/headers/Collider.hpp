@@ -37,10 +37,9 @@ class Collider : public Node {
         Vector2f getMax();
 
         virtual void updateBounds() = 0;
-
         virtual bool checkPoint(Vector2f point) = 0;
+        
         virtual Vector2f getSupportPoint(Vector2f normal) = 0;
-
         virtual size_t getNormalVectors(vector<Vector2f>& out) = 0;
         virtual void getMaxProjection(Vector2f directionVector, float & min, float & max) = 0;
         virtual Edge getBestEdge(Vector2f normal) = 0;

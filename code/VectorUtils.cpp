@@ -46,6 +46,15 @@ float VectorUtils::projectScaler(Vector2f A, Vector2f B) {
 Vector2f VectorUtils::directionVector(float angle) {
     return Vector2f (std::cos(angle), std::sin(angle));
 }
+Vector2f VectorUtils::clampMagnitude(Vector2f A, float min, float max) {
+    float magnitude = VectorUtils::magnitude(A);
+    if (magnitude < min) {
+        return VectorUtils::normalise(A) * min;
+    } else if (magnitude > max) {
+        return VectorUtils::normalise(A) * max;
+    }
+    return A;
+}
 Vector2i VectorUtils::floorToInt(Vector2f A) {
     return Vector2i(std::floor(A.x), std::floor(A.y));
 }
