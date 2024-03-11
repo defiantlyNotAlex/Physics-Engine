@@ -4,7 +4,7 @@
 using sf::Vector2f;
 using sf::Vector2i;
 using sf::Vector3f;
-#include "FloatUtils.hpp"
+#include "FloatMaths.hpp"
 #include <string>
 using std::string;
 #include <cmath>
@@ -13,7 +13,7 @@ using std::string;
 #include <unordered_map>
 using std::unordered_map;
 
-class VectorUtils {
+class VectorMaths {
     public:
         static Vector2f zero();
         static Vector2f one();
@@ -39,6 +39,7 @@ class VectorUtils {
         static float dotProd(Vector3f A, Vector3f B);
         static float crossProd(Vector2f A, Vector2f B);
         static Vector3f crossProd(Vector3f A, Vector3f B);
+        static Vector2f convertTo2D(Vector3f A);
         static Vector3f convertTo3D(Vector2f A);
         static float magnitude(Vector2f A);
         static float magnitudeSqr(Vector2f A);
@@ -53,6 +54,8 @@ class VectorUtils {
         static Vector2i floorToInt(Vector2f A);
         static Vector2i ceilToInt(Vector2f A);
         static Vector2f toFloat(Vector2i A);
+
+        static bool nearlyEqual(Vector2f A, Vector2f B);
 
         static size_t hash(Vector2i A);
 };

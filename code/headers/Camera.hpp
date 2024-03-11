@@ -1,5 +1,6 @@
 #pragma once
 #include "Node.hpp"
+#include "Shape.hpp"
 #include <SFML/Graphics.hpp>
 
 class Camera : public Node {
@@ -15,9 +16,10 @@ class Camera : public Node {
         Vector2f convertWorldtoDisplay(Vector2f world);
         Vector2f convertDisplaytoWorld(Vector2f display);
 
+        void drawShape(Transform shapeTransform, Shape* shape, sf::Color colour = sf::Color::White, sf::Texture* sprite = nullptr);
         void drawRect(Transform rectTransform, Vector2f size, sf::Color colour = sf::Color::White, sf::Texture* sprite = nullptr);
         void drawCirc(Transform circTransform, float radius,  sf::Color colour = sf::Color::White, sf::Texture* sprite = nullptr);
-        void drawPolygon(Transform polygonTransform, vector<Vector2f> &points,  sf::Color colour = sf::Color::White, sf::Texture* sprite = nullptr);
+        void drawPolygon(Transform polygonTransform, vector<Vector2f> points,  sf::Color colour = sf::Color::White, sf::Texture* sprite = nullptr);
 
         void update(float dt);
 };

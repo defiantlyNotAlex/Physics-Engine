@@ -4,51 +4,38 @@
 #include "Shapes.hpp"
 #include <optional>
 #include <vector>
+#include "AABB.hpp"
 using std::vector;
-
-enum class ColliderType{
-    None,
-    Rect,
-    Circle,
-    Polygon,
-};
 
 class Collider : public Node {
     protected:
-        ColliderType colliderType;
-        Vector2f min = VectorUtils::zero();
-        Vector2f max = VectorUtils::zero();
-
-        // potentially move to vector utils??
-        static vector<Vector2f> clipPoints(Vector2f start, Vector2f end, Vector2f normal, float dot);
+        AABB boundingBox;
+        Shape* shape;
+        
+        static float pointSegmentDistace(Vector2f point, Vector2f A, Vector2f B, Vector2f& contactPoint);
+        static std::optional<Vector2f> CircleCircleHelper(Transform& transformA, float radiusA, Transform& transformB, float radiusB);
+        static std::optional<Vector2f> CirclePolygonHelper(Transform& transformA, float radiusA, Transform& transformB, vector<Vector2f> pointsB);
+        static std::optional<Vector2f> PolygonPolygonHelper(Transform& transformA, vector<Vector2f> pointsA, Transform& transformB, vector<Vector2f> pointsB);
+        
 
     public:
-        Collider(Node* _parent, Transform _transform, ColliderType _coliderType);
+        Collider(Node* _parent, Transform _transform, Shape * _shape);
         ~Collider();
 
-        inline ColliderType getType();
         inline const Vector2f getPosition();
         inline const float getRotation();
 
         void setPosition(Vector2f pos);
         void setRotation(float rot);
 
-        Vector2f getMin();
-        Vector2f getMax();
+        void updateBounds();
+        AABB getBoundingBox();
+        Shape* getShape();
 
-        virtual void updateBounds() = 0;
-        virtual bool checkPoint(Vector2f point) = 0;
-        
-        virtual Vector2f getSupportPoint(Vector2f normal) = 0;
-        virtual size_t getNormalVectors(vector<Vector2f>& out) = 0;
-        virtual void getMaxProjection(Vector2f directionVector, float & min, float & max) = 0;
-        virtual Edge getBestEdge(Vector2f normal) = 0;
+        bool checkPoint(Vector2f point);
+        bool checkCollision(Collider * other);
 
-        bool inBounds(Vector2f point);
-        bool overlappingBounds(Collider * other);
-        bool checkCol(Collider * other);
-
-        CollisionManifold getOverlap(Collider* other);
-        std::optional<Vector2f> getContactPoint(Collider* other, Vector2f normal);
+        CollisionManifold getCollision(Collider* other);
+        std::optional<Vector2f> getContactPoint(Collider* other);
         
 };

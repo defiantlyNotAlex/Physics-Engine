@@ -1,27 +1,23 @@
 #include "headers/Collider.hpp"
 #include <iostream>
 
-Collider::Collider(Node* _parent, Transform _transform, ColliderType _colliderType) : Node (_parent, _transform) {
-    colliderType = _colliderType;
+Collider::Collider(Node* _parent, Transform _transform, Shape* _shape) : Node (_parent, _transform) {
+    shape = _shape;
 }
 Collider::~Collider() {}
 
-inline ColliderType Collider::getType() {
-    return colliderType;
-}
 inline const Vector2f Collider::getPosition() {
     return transform.pos;
 }
 inline const float Collider::getRotation() {
     return transform.rot;
 }
-Vector2f Collider::getMin() {
-    return min;
+AABB Collider::getBoundingBox() {
+    return boundingBox;
 }
-Vector2f Collider::getMax() {
-    return max;
+Shape* Collider::getShape() {
+    return shape;
 }
-
 void Collider::setPosition(Vector2f pos) {
     transform.pos = pos;
     updateBounds();
@@ -30,191 +26,175 @@ void Collider::setRotation(float rot) {
     transform.rot = rot;
     updateBounds();
 }
-bool Collider::inBounds(Vector2f point) {
-    Vector2f thisMin = getMin();
-    Vector2f thisMax = getMax();
-    return point.x > thisMin.x && point.x < thisMax.x && point.y > thisMin.y && point.y < thisMax.y;
+bool Collider::checkPoint(Vector2f point) {
+    return shape->checkPoint(transform, point);
 }
-bool Collider::overlappingBounds(Collider * col) {
-    const Vector2f otherMin = col->getMin();
-    const Vector2f otherMax = col->getMax(); 
-
-    const Vector2f thisMin = getMin();
-    const Vector2f thisMax = getMax();
-    
-    return thisMin.x < otherMax.x
-        && thisMax.x > otherMin.x
-        && thisMin.y < otherMax.y
-        && thisMax.y > otherMin.y;
+void Collider::updateBounds() {
+    boundingBox = shape->getBoundingBox(transform);
 }
-bool Collider::checkCol(Collider* other) {
-    if (!overlappingBounds(other)) return false;
+bool Collider::checkCollision(Collider* other) {
+    if (!boundingBox.checkOverlap(other->boundingBox)) return false;
 
-    vector<Vector2f> dirVectors;
-    auto displacement = VectorUtils::normalise(other->getPosition() - getPosition());
-    //dirVectors.push_back(displacement);
+    vector<Vector2f> normalVectors;
+    auto displacement = VectorMaths::normalise(other->getPosition() - getPosition());
+    normalVectors.push_back(displacement);
 
-    this->getNormalVectors(dirVectors);
-    other->getNormalVectors(dirVectors);
+    this->shape->getNormalVectors(this->transform, normalVectors);
+    other->shape->getNormalVectors(other->transform, normalVectors);
 
-    for (Vector2f dirVector : dirVectors) {
-        float thisMin = FLT_MAX;
-        float thisMax = -FLT_MAX;
+    for (Vector2f normal : normalVectors) {
+        float thisMin = this->shape->getMinProjection(this->transform, normal);
+        float thisMax = this->shape->getMaxProjection(this->transform, normal);
 
-        float otherMin = FLT_MAX;
-        float otherMax = -FLT_MAX;
-        
-        this->getMaxProjection(dirVector, thisMin, thisMax);
-        other->getMaxProjection(dirVector, otherMin, otherMax);
+        float otherMin = other->shape->getMinProjection(other->transform, normal);
+        float otherMax = other->shape->getMaxProjection(other->transform, normal);
+
         
         if (!(thisMin < otherMax && thisMax > otherMin)) return false;
     }
     return true;
 }
 
-CollisionManifold Collider::getOverlap(Collider* other) {
+CollisionManifold Collider::getCollision(Collider* other) {
     CollisionManifold res;
-    if (!overlappingBounds(other)) return res;
+    if (!boundingBox.checkOverlap(other->boundingBox)) return res;
 
     vector<Vector2f> normalVectors;
-    //auto displacement = VectorUtils::normalise(other->getPosition() - getPosition());
-    //normalVectors.push_back(displacement);
+    auto displacement = VectorMaths::normalise(other->getPosition() - getPosition());
+    normalVectors.push_back(displacement);
 
-    this->getNormalVectors(normalVectors);
-    other->getNormalVectors(normalVectors);
+    this->shape->getNormalVectors(this->transform, normalVectors);
+    other->shape->getNormalVectors(other->transform, normalVectors);
 
     for (size_t i = 0; i < normalVectors.size(); i++) {
-        Vector2f d = normalVectors[i];
+        Vector2f normal = normalVectors[i];
 
-        float thisMin = FLT_MAX;
-        float thisMax = -FLT_MAX;
+        float thisMin = this->shape->getMinProjection(this->transform, normal);
+        float thisMax = this->shape->getMaxProjection(this->transform, normal);
 
-        float otherMin = FLT_MAX;
-        float otherMax = -FLT_MAX;
-
-        this->getMaxProjection(d, thisMin, thisMax);
-        other->getMaxProjection(d, otherMin, otherMax);
+        float otherMin = other->shape->getMinProjection(other->transform, normal);
+        float otherMax = other->shape->getMaxProjection(other->transform, normal);
 
         if (i == 0 || thisMax - otherMin < res.depth || otherMax - thisMin < res.depth) {
             if (thisMax - otherMin <= otherMax - thisMin) {
-                res.normal = -d;
+                res.normal = -normal;
                 res.depth = thisMax - otherMin;
             } else {
-                res.normal = d;
+                res.normal = normal;
                 res.depth = otherMax - thisMin;
             }
         }
     }
 
-    if (this->colliderType == ColliderType::Circle)  {
-        res.contact = this->getSupportPoint(res.normal);
-    } else if (other->colliderType == ColliderType::Circle) {
-        res.contact = other->getSupportPoint(-res.normal);
-    } else {
-        res.contact = getContactPoint(other, res.normal);
-    }
+    res.contact = getContactPoint(other);
     
     return res;
 }
-vector<Vector2f> Collider::clipPoints(Vector2f start, Vector2f end, Vector2f normal, float dot) {
-    vector<Vector2f> clippedPoints;
-    float startDot = VectorUtils::dotProd(start, normal) - dot;
-    float endDot = VectorUtils::dotProd(end, normal) - dot;
 
-    if (startDot >= 0.0) clippedPoints.push_back(start);
-    if (endDot >= 0.0) clippedPoints.push_back(end);
+float Collider::pointSegmentDistace(Vector2f P, Vector2f A, Vector2f B, Vector2f& contactPoint) {
+    Vector2f AB = B - A;
+    Vector2f AP = P - A;
 
-    if (startDot * endDot < 0.0) {
-        const Vector2f edge = end - start;
-        const float t = startDot / (startDot - endDot);
+    float proj = VectorMaths::dotProd(AP, AB);
+    float ABlenSquared = VectorMaths::magnitudeSqr(AB);
+    float d = proj / ABlenSquared;
 
-        clippedPoints.push_back(start + (t * edge));
-    }
-    return clippedPoints;
-}
-std::optional<Vector2f> Collider::getContactPoint(Collider* other, Vector2f normal) {
-    auto edgeThis = this->getBestEdge(-normal);
-    auto edgeOther = other->getBestEdge(normal);
-
-    Edge reference;
-    Edge incident;
-    bool flip = false;
-
-    normal = {0, -1};
-
-    float d_this = std::abs(VectorUtils::dotProd(edgeThis.edgeVector(), normal));
-    float d_other = std::abs(VectorUtils::dotProd(edgeOther.edgeVector(), normal));
-
-    
-
-    std::cout << VectorUtils::toString(edgeThis.edgeVector()) << std::endl;
-    std::cout << VectorUtils::toString(edgeOther.edgeVector()) << std::endl;
-    std::cout << normal.x << " " << normal.y << std::endl;
-    std::cout << "d: " << d_this << " " << d_other << std::endl;
-    if (std::abs(d_this - d_other) < FloatUtils::epsilon) {
-        std::cout << "small" << std::endl;
-    }
-    
-    if (d_this <= d_other) {
-        reference = edgeThis;
-        incident = edgeOther;
+    if (d <= 0.f) {
+        contactPoint = A;
+    } else if (d >= 1.f) {
+        contactPoint = B;
     } else {
-        reference = edgeOther;
-        incident = edgeThis;
-        // flips the incident normal for the final result
-        flip = true;
+        contactPoint = A + AB * d;
     }
-
-    reference.printEdge();
-    incident.printEdge();
-
-    auto referenceEdge = VectorUtils::normalise(reference.edgeVector());
-
-    float referenceStartDot = VectorUtils::dotProd(referenceEdge, reference.start);
-    auto clippedPoints = Collider::clipPoints(incident.start, incident.end, referenceEdge, referenceStartDot);
-    if (clippedPoints.size() < 2) {
-        if (clippedPoints.size() == 0) {
-            return {};
-        }
-        return clippedPoints[0];
+    return VectorMaths::magnitudeSqr(P - contactPoint);
+}
+std::optional<Vector2f> Collider::getContactPoint(Collider* other) {
+    if (this->getShape()->getType() == Shape::Type::Circle && this->getShape()->getType() == Shape::Type::Circle) {
+        return CircleCircleHelper(this->transform, ((Circle*)this->getShape())->getRadius(), other->transform, ((Circle*)other->getShape())->getRadius());
     }
-
-    float referenceEndDot = VectorUtils::dotProd(referenceEdge, reference.end);
-    clippedPoints = Collider::clipPoints(clippedPoints[0], clippedPoints[1], -referenceEdge, -referenceEndDot);
-    if (clippedPoints.size() < 2) {
-        if (clippedPoints.size() == 0) {
-            return {};
-        }
-        return clippedPoints[0];
+    if (this->shape->getType() == Shape::Type::Circle) {
+        return CirclePolygonHelper(this->transform, ((Circle*)this->getShape())->getRadius(), other->transform, other->getShape()->getPoints());
     }
-    
-    Vector2f referenceNormal = VectorUtils::rotate90_ACW(referenceEdge);
-    if (flip) {referenceNormal *= -1.0f;}
-
-    float max = VectorUtils::dotProd(referenceNormal, reference.best);
-
-    std::cout << VectorUtils::toString(clippedPoints[0]) << ", " << VectorUtils::toString(clippedPoints[1]) << std::endl;
-    std::cout << max << std::endl;
-
-
-    std::cout << VectorUtils::dotProd(referenceNormal, clippedPoints.front()) << std::endl;
-    std::cout << VectorUtils::dotProd(referenceNormal, clippedPoints.back()) << std::endl;
-    if (VectorUtils::dotProd(referenceNormal, clippedPoints.front()) - max < 0.0) {
-        clippedPoints.front() = clippedPoints.back();
-        clippedPoints.pop_back();
+    if (other->shape->getType() == Shape::Type::Circle) {
+        return CirclePolygonHelper(other->transform, ((Circle*)other->getShape())->getRadius(), this->transform, this->getShape()->getPoints());
     }
-    if (VectorUtils::dotProd(referenceNormal, clippedPoints.back()) - max < 0.0) {
-        clippedPoints.pop_back();
-    }
+    return PolygonPolygonHelper(this->transform, this->getShape()->getPoints(), other->transform, other->getShape()->getPoints());
+}
 
-    if (clippedPoints.size() == 0) {
+std::optional<Vector2f> Collider::CircleCircleHelper(Transform& transformA, float radiusA, Transform& transformB, float radiusB) {
+    const Vector2f displacement = transformA.pos - transformB.pos;
+    if (VectorMaths::magnitude(displacement) > radiusA + radiusB) {
         return {};
     }
-
-    Vector2f averagePoint = VectorUtils::zero();
-    for (Vector2f cp : clippedPoints) {
-        averagePoint += cp;
-    }
-
-    return averagePoint / (float)clippedPoints.size();
+    const Vector2f d = VectorMaths::normalise(displacement);
+    return (transformA.pos + d * radiusA + transformB.pos - d * radiusB) * 0.5f; 
 }
+std::optional<Vector2f> Collider::CirclePolygonHelper(Transform& transformA, float radiusA, Transform& transformB, vector<Vector2f> pointsB) {
+    float minDistace;
+    Vector2f cp;
+    for (size_t i = 0; i < pointsB.size(); i++) {
+        const Vector2f A = transformB.convertLocaltoWorld(pointsB[i]);
+        const Vector2f B = transformB.convertLocaltoWorld(pointsB[(i+1)%pointsB.size()]);
+
+        Vector2f contactPoint;
+        float distSqrd = pointSegmentDistace(transformA.pos, A, B, contactPoint);
+        if (i == 0 || distSqrd < minDistace) {
+            minDistace = distSqrd;
+            cp = contactPoint;
+        }
+    }
+    if (minDistace > radiusA * radiusA) {
+        return {};
+    }
+    return cp;
+}
+std::optional<Vector2f> Collider::PolygonPolygonHelper(Transform& transformA, vector<Vector2f> pointsA, Transform& transformB, vector<Vector2f> pointsB) {
+    Vector2f contact1 = VectorMaths::zero();
+    Vector2f contact2 = VectorMaths::zero();
+    float minDistace = FLT_MAX;
+    size_t contactCount = 0;
+
+    for (size_t i = 0; i < pointsA.size(); i++) {
+        Vector2f P = transformA.convertLocaltoWorld(pointsA[i]);
+        for (size_t j = 0; j < pointsB.size(); j++) {
+            const Vector2f A = transformB.convertLocaltoWorld(pointsB[j]);
+            const Vector2f B = transformB.convertLocaltoWorld(pointsB[(j+1)%pointsB.size()]);
+            Vector2f cp;
+            float distSqr = pointSegmentDistace(P, A, B, cp);
+            if (FloatMaths::nearlyEqual(distSqr, minDistace)) {
+                if (!VectorMaths::nearlyEqual(cp, contact1)) {
+                    contact2 = cp;
+                    contactCount = 2;
+                }
+            } else if (distSqr < minDistace) {
+                minDistace = distSqr;
+                contact1 = cp;
+                contactCount = 1;
+            }
+        }
+    }
+    for (size_t i = 0; i < pointsB.size(); i++) {
+        Vector2f P = transformB.convertLocaltoWorld(pointsB[i]);
+        for (size_t j = 0; j < pointsA.size(); j++) {
+            const Vector2f A = transformA.convertLocaltoWorld(pointsA[j]);
+            const Vector2f B = transformA.convertLocaltoWorld(pointsA[(j+1)%pointsA.size()]);
+            Vector2f cp;
+            float distSqr = pointSegmentDistace(P, A, B, cp);
+            if (FloatMaths::nearlyEqual(distSqr, minDistace)) {
+                if (!VectorMaths::nearlyEqual(cp, contact1)) {
+                    contact2 = cp;
+                    contactCount = 2;
+                }
+            } else if (distSqr < minDistace) {
+                minDistace = distSqr;
+                contact1 = cp;
+                contactCount = 1;
+            } 
+        }
+    }
+    std::cout << VectorMaths::toString(contact1) << std::endl;
+    std::cout << VectorMaths::toString(contact2) << std::endl;
+    if (contactCount == 0) return {};
+    if (contactCount == 1) return contact1;
+    return (contact1 + contact2) * 0.5f;
+}   

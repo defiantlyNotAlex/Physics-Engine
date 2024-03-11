@@ -24,10 +24,26 @@ Vector2f Camera::convertDisplaytoWorld(Vector2f display) {
     const Vector2f local = adjusted / scale;
     return transform.convertLocaltoWorld(local);
 }
+void Camera::drawShape(Transform shapeTransform, Shape* shape, sf::Color colour, sf::Texture* sprite) {
+    switch (shape->getType())
+    {
+    case Shape::Type::Circle:
+        drawCirc(shapeTransform, ((Circle*)shape)->getRadius(), colour, sprite);
+        break;
+    case Shape::Type::Rect:
+        drawRect(shapeTransform, ((Rect*)shape)->getSize(), colour, sprite);
+        break;
+    case Shape::Type::Polygon:
+        drawPolygon(shapeTransform, ((Polygon*)shape)->getPoints(), colour, sprite);
+        break;
+    default:
+        break;
+    }
+}
 void Camera::drawRect(Transform rectTransform, Vector2f size, sf::Color colour, sf::Texture* sprite) {
     sf::RectangleShape rect(size * scale);
     rect.setOrigin(size * scale / 2.f);
-    rect.setRotation(FloatUtils::radToDegree(rectTransform.rot - transform.rot));
+    rect.setRotation(FloatMaths::radToDegree(rectTransform.rot - transform.rot));
     rect.setFillColor(colour);
     if (sprite) {
         rect.setTexture(sprite);
@@ -37,8 +53,8 @@ void Camera::drawRect(Transform rectTransform, Vector2f size, sf::Color colour, 
 }
 void Camera::drawCirc(Transform circtTransform, float radius, sf::Color colour, sf::Texture* sprite) {
     sf::CircleShape circ(radius * scale);
-    circ.setOrigin(VectorUtils::one() * radius * scale);
-    circ.setRotation(FloatUtils::radToDegree(circtTransform.rot));
+    circ.setOrigin(VectorMaths::one() * radius * scale);
+    circ.setRotation(FloatMaths::radToDegree(circtTransform.rot));
     circ.setFillColor(colour);
     if (sprite) {
         circ.setTexture(sprite);
@@ -46,7 +62,7 @@ void Camera::drawCirc(Transform circtTransform, float radius, sf::Color colour, 
     circ.setPosition(convertWorldtoDisplay(circtTransform.pos));
     window->draw(circ);
 }
-void Camera::drawPolygon(Transform polygonTransform, vector<Vector2f> & points, sf::Color colour, sf::Texture* sprite) {
+void Camera::drawPolygon(Transform polygonTransform, vector<Vector2f> points, sf::Color colour, sf::Texture* sprite) {
     sf::ConvexShape polygon;
     polygon.setPointCount(points.size());
     for (size_t i = 0; i < points.size(); i++) {

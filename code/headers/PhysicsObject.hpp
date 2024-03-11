@@ -1,6 +1,6 @@
 #pragma once
 #include "Node.hpp"
-#include "Colliders.hpp"
+#include "Collider.hpp"
 #include "Material.hpp"
 
 class PhysicsObject : public Node {
