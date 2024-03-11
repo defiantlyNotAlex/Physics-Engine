@@ -38,7 +38,7 @@ bool Collider::checkCollision(Collider* other) {
 
     vector<Vector2f> normalVectors;
     auto displacement = VectorMaths::normalise(other->getPosition() - getPosition());
-    //normalVectors.push_back(displacement);
+    normalVectors.push_back(displacement);
 
     this->shape->getNormalVectors(this->transform, normalVectors);
     other->shape->getNormalVectors(other->transform, normalVectors);
@@ -62,7 +62,7 @@ CollisionManifold Collider::getCollision(Collider* other) {
 
     vector<Vector2f> normalVectors;
     auto displacement = VectorMaths::normalise(other->getPosition() - getPosition());
-    //normalVectors.push_back(displacement);
+    normalVectors.push_back(displacement);
 
     this->shape->getNormalVectors(this->transform, normalVectors);
     other->shape->getNormalVectors(other->transform, normalVectors);
@@ -125,7 +125,7 @@ std::optional<Vector2f> Collider::getContactPoint(Collider* other) {
 std::optional<Vector2f> Collider::CircleCircleHelper(Transform& transformA, float radiusA, Transform& transformB, float radiusB) {
     const Vector2f displacement = transformA.pos - transformB.pos;
     if (VectorMaths::magnitude(displacement) > radiusA + radiusB) {
-        return {};
+        //return {};
     }
     const Vector2f d = VectorMaths::normalise(displacement);
     return (transformA.pos + d * radiusA + transformB.pos - d * radiusB) * 0.5f; 
@@ -145,7 +145,7 @@ std::optional<Vector2f> Collider::CirclePolygonHelper(Transform& transformA, flo
         }
     }
     if (minDistace > radiusA * radiusA) {
-        return {};
+        //return {};
     }
     return cp;
 }
@@ -193,8 +193,6 @@ std::optional<Vector2f> Collider::PolygonPolygonHelper(Transform& transformA, ve
             } 
         }
     }
-    //std::cout << VectorMaths::toString(contact1) << std::endl;
-    //std::cout << VectorMaths::toString(contact2) << std::endl;
     if (contactCount == 0) return {};
     if (contactCount == 1) return contact1;
     return (contact1 + contact2) * 0.5f;

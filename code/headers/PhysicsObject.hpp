@@ -1,7 +1,6 @@
 #pragma once
 #include "Node.hpp"
 #include "Collider.hpp"
-#include "Material.hpp"
 
 class PhysicsObject : public Node {
     private:
@@ -22,7 +21,11 @@ class PhysicsObject : public Node {
         float mass;
         float inertia;
 
-        Material material;
+        struct Material {
+            float staticFriction;
+            float dynamicFriction;
+            float elasticity;
+        } material;
 
         bool lockRotation = false;
         bool lockPosition = false;

@@ -20,14 +20,23 @@ int main() {
     Camera* camera = (Camera*)root->addChild(new Camera(root, &window, Transform({0, 0}, 0), 1));
     MouseGrabber* mg = (MouseGrabber*)root->addChild(new MouseGrabber());
 
-    Collider* A = (Collider*)root->addChild(new Collider(root, Transform({0, 140}, 0), new Rect({480, 40})));
+    Collider* A = (Collider*)root->addChild(new Collider(root, Transform({0, 300}, 0), new Rect({1000, 40})));
     Collider* B = (Collider*)root->addChild(new Collider(root, Transform({20, 20}, 0), new Rect({50, 50})));
+    Collider* C = (Collider*)root->addChild(new Collider(root, Transform({40, 40}, 0), new Rect({50, 50})));
+    //Collider* D = (Collider*)root->addChild(new Collider(root, Transform({20, -80}, 0), new Circle(50)));
+    Collider* E = (Collider*)root->addChild(new Collider(root, Transform({-50, -100}, 0), new Polygon({{-20, -20}, {20, -20}, {25, 0}, {20, 20}, {-20, 20}, {-25, 0}})));
+    //Collider* F = (Collider*)root->addChild(new Collider(root, Transform({80, -120}, 0), new Circle(20)));
 
     PhysicsObject* P = (PhysicsObject*)root->addChild(new PhysicsObject(root, A->transform, A, 10, 333333));
     PhysicsObject* Q = (PhysicsObject*)root->addChild(new PhysicsObject(root, B->transform, B, 1, 3333));
+    PhysicsObject* R = (PhysicsObject*)root->addChild(new PhysicsObject(root, C->transform, C, 1, 3333));
+    //PhysicsObject* S = (PhysicsObject*)root->addChild(new PhysicsObject(root, D->transform, D, 1, 3333));
+    PhysicsObject* T = (PhysicsObject*)root->addChild(new PhysicsObject(root, E->transform, E, 1, 3333));
+    //PhysicsObject* U = (PhysicsObject*)root->addChild(new PhysicsObject(root, F->transform, F, 1, 3333));
+
 
     P->lockPosition = true;
-    P->lockRotation = true;
+    //P->lockRotation = true;
 
     sf::Mouse mouse;
 
@@ -75,6 +84,10 @@ int main() {
         window.draw(text);
         camera->drawShape(A->transform, A->getShape());
         camera->drawShape(B->transform, B->getShape());
+        camera->drawShape(C->transform, C->getShape());
+        //camera->drawShape(D->transform, D->getShape());
+        camera->drawShape(E->transform, E->getShape());
+        //camera->drawShape(F->transform, F->getShape());
         window.display(); 
         
               

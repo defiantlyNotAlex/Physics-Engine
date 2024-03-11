@@ -2,7 +2,7 @@
 
 vector<PhysicsObject*>* PhysicsObject::objectList = new vector<PhysicsObject*>;
 
-float PhysicsObject::gravity = 100;
+float PhysicsObject::gravity = 200;
 float PhysicsObject::drag = 0.001; 
 float PhysicsObject::angularDrag = 2;
 
@@ -15,7 +15,8 @@ PhysicsObject::PhysicsObject(Node* _parent, Transform _transform, Collider* _col
     mass = _mass;
     inertia = _inertia;
     material.elasticity = 0;
-    material.friction = 0.2;
+    material.dynamicFriction = 0.6;
+    material.staticFriction = 0.3;
 }
 PhysicsObject::~PhysicsObject() {
     delete(collider);
@@ -76,40 +77,70 @@ void PhysicsObject::move(float dt) {
 void PhysicsObject::Collision(float dt, PhysicsObject* other) {
     CollisionManifold cm = collider->getCollision(other->collider);
 
-    this->setPosition(this->getPosition() + cm.normal * cm.depth);
     if (!cm.contact.has_value()) {
         std::cout << cm.depth << std::endl;
         std::cout << "no point" << std::endl;
         std::cout << VectorMaths::toString(cm.normal) << std::endl;
-        //exit(0);
         return;
     }
-    
+    this->setPosition(this->getPosition() + cm.normal * cm.depth);
     Vector2f contact = cm.contact.value();
+    Vector2f relativeVelocity = other->getLinearVel(contact) - this->getLinearVel(contact);
 
-    const Vector2f v_r = other->getLinearVel(contact) - this->getLinearVel(contact);
-    //const Vector2f displacement = other->getPosition() - this->getPosition();
+    const Vector2f ra = contact - this->getPosition();
+    const Vector2f rb = contact - other->getPosition();
 
-    const Vector3f r_this = VectorMaths::convertTo3D(contact - this->getPosition());
-    const Vector3f r_other = VectorMaths::convertTo3D(contact - other->getPosition());
-    const Vector3f normal3D = VectorMaths::convertTo3D(cm.normal);
+    const Vector2f raPerp = Vector2f(-ra.y, ra.x);
+    const Vector2f rbPerp = Vector2f(-rb.y, rb.x);
 
-    const float m_this_inv = 1.f / this->mass;
-    const float m_other_inv = 1.f / other->mass;
+    const float m_this_inv = this->lockPosition ? 0 : 1.f / this->mass;
+    const float m_other_inv = other->lockPosition ? 0 : 1.f / other->mass;
+    const float I_this_inv = this->lockRotation ? 0 : 1.f / this->inertia;
+    const float I_other_inv = other->lockRotation ? 0 : 1.f / other->inertia;
 
-    const float I_this_inv = 1.f / this->inertia;
-    const float I_other_inv = 1.f / other->inertia;
+    const float raPerpDotN = VectorMaths::dotProd(raPerp, cm.normal);
+    const float rbPerpDotN = VectorMaths::dotProd(rbPerp, cm.normal);
 
-    const Vector3f L_this = I_this_inv * VectorMaths::crossProd(VectorMaths::crossProd(r_this, normal3D), r_this);
-    const Vector3f L_other = I_other_inv * VectorMaths::crossProd(VectorMaths::crossProd(r_other, normal3D), r_other);
+    const float denominator = m_this_inv + m_other_inv + 
+    (I_this_inv * raPerpDotN * raPerpDotN) + 
+    (I_other_inv * rbPerpDotN * rbPerpDotN);
 
-    float elasticicityCoef = this->material.elasticity * other->material.elasticity;
-    const float impulseReaction = -(1 + elasticicityCoef) * VectorMaths::dotProd(v_r, cm.normal) 
-        / (m_this_inv + m_other_inv + VectorMaths::dotProd(L_this +  L_other, normal3D));
+    float restitution = this->material.elasticity * other->material.elasticity;
+    const float j = -(1 + restitution) * VectorMaths::dotProd(relativeVelocity, cm.normal) / denominator;
+    Vector2f reactionImpulse = j * cm.normal;
 
-    this->applyForce(1, -impulseReaction * cm.normal, contact);
-    other->applyForce(1, impulseReaction * cm.normal, contact);
+    this->applyForce(1, -reactionImpulse, contact);
+    other->applyForce(1, reactionImpulse, contact);
+
+    Vector2f tangent = relativeVelocity - VectorMaths::dotProd(relativeVelocity, cm.normal) * cm.normal;
+    const float staticFrictionCoeff = (this->material.staticFriction + other->material.staticFriction)*0.5f;
+    const float dynamicFrictionCoeff = (this->material.dynamicFriction + other->material.dynamicFriction) * 0.5f;
+
+    if (VectorMaths::nearlyEqual(tangent, VectorMaths::zero())) {
+        return;
+    } else {
+        tangent = VectorMaths::normalise(tangent);
+    }
+
+    const float raPerpDotT = VectorMaths::dotProd(raPerp, tangent);
+    const float rbPerpDotT = VectorMaths::dotProd(rbPerp, tangent);
+
+    const float denominatorFriction = m_this_inv + m_other_inv +
+        (I_this_inv * raPerpDotT * raPerpDotT) + 
+        (I_other_inv * rbPerpDotT * rbPerpDotT);
+
+    const float jt = -VectorMaths::dotProd(relativeVelocity, tangent) / denominatorFriction;
+    Vector2f frictionImpulse;
+    if (std::abs(jt) <= j * staticFrictionCoeff) {
+        frictionImpulse = jt * tangent;
+    } else {
+        frictionImpulse = -j * tangent * dynamicFrictionCoeff;
+    }
+    this->applyForce(1, frictionImpulse, contact);
+    other->applyForce(1, -frictionImpulse, contact);
+
 }
+
 void PhysicsObject::applyForce(float dt, Vector2f force, Vector2f forcePos) {
     velocity += dt * force / mass;
     angularVelocity += dt * VectorMaths::crossProd(forcePos - transform.pos, force) / inertia;

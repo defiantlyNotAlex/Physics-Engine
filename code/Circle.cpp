@@ -22,5 +22,5 @@ const bool Circle::checkPoint(Transform transform, Vector2f point) {
     return VectorMaths::magnitudeSqr(transform.pos - point) < radius * radius;
 }
 const AABB Circle::getBoundingBox(Transform transform) {
-    return AABB(transform.pos + Vector2f(radius, radius), transform.pos - Vector2f(radius, radius));
+    return AABB(transform.pos - Vector2f(radius, radius), transform.pos + Vector2f(radius, radius));
 }
