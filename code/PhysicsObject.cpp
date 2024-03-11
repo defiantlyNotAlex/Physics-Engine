@@ -51,7 +51,7 @@ void PhysicsObject::move(float dt) {
     if (lockPosition) velocity = VectorMaths::zero();
     if (lockRotation) angularVelocity = 0;
 
-    //if (lockPosition && lockRotation) return;
+    if (lockPosition && lockRotation) return;
     applyForce(dt, -velocity * VectorMaths::magnitude(velocity) * drag, this->getPosition());
     applyTorque(dt, -angularDrag * angularVelocity * angularVelocity);
 
@@ -85,11 +85,10 @@ void PhysicsObject::Collision(float dt, PhysicsObject* other) {
         return;
     }
     
-    
     Vector2f contact = cm.contact.value();
 
     const Vector2f v_r = other->getLinearVel(contact) - this->getLinearVel(contact);
-    const Vector2f displacement = other->getPosition() - this->getPosition();
+    //const Vector2f displacement = other->getPosition() - this->getPosition();
 
     const Vector3f r_this = VectorMaths::convertTo3D(contact - this->getPosition());
     const Vector3f r_other = VectorMaths::convertTo3D(contact - other->getPosition());

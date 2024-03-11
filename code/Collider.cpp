@@ -3,6 +3,7 @@
 
 Collider::Collider(Node* _parent, Transform _transform, Shape* _shape) : Node (_parent, _transform) {
     shape = _shape;
+    updateBounds();
 }
 Collider::~Collider() {}
 
@@ -37,7 +38,7 @@ bool Collider::checkCollision(Collider* other) {
 
     vector<Vector2f> normalVectors;
     auto displacement = VectorMaths::normalise(other->getPosition() - getPosition());
-    normalVectors.push_back(displacement);
+    //normalVectors.push_back(displacement);
 
     this->shape->getNormalVectors(this->transform, normalVectors);
     other->shape->getNormalVectors(other->transform, normalVectors);
@@ -61,7 +62,7 @@ CollisionManifold Collider::getCollision(Collider* other) {
 
     vector<Vector2f> normalVectors;
     auto displacement = VectorMaths::normalise(other->getPosition() - getPosition());
-    normalVectors.push_back(displacement);
+    //normalVectors.push_back(displacement);
 
     this->shape->getNormalVectors(this->transform, normalVectors);
     other->shape->getNormalVectors(other->transform, normalVectors);
@@ -192,8 +193,8 @@ std::optional<Vector2f> Collider::PolygonPolygonHelper(Transform& transformA, ve
             } 
         }
     }
-    std::cout << VectorMaths::toString(contact1) << std::endl;
-    std::cout << VectorMaths::toString(contact2) << std::endl;
+    //std::cout << VectorMaths::toString(contact1) << std::endl;
+    //std::cout << VectorMaths::toString(contact2) << std::endl;
     if (contactCount == 0) return {};
     if (contactCount == 1) return contact1;
     return (contact1 + contact2) * 0.5f;

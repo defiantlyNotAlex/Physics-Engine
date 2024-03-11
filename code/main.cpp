@@ -27,7 +27,7 @@ int main() {
     PhysicsObject* Q = (PhysicsObject*)root->addChild(new PhysicsObject(root, B->transform, B, 1, 3333));
 
     P->lockPosition = true;
-    //P->lockRotation = true;
+    P->lockRotation = true;
 
     sf::Mouse mouse;
 
