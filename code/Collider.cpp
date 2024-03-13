@@ -7,16 +7,16 @@ Collider::Collider(Node* _parent, Transform _transform, Shape* _shape) : Node (_
 }
 Collider::~Collider() {}
 
-inline const Vector2f Collider::getPosition() {
+inline Vector2f Collider::getPosition() const {
     return transform.pos;
 }
-inline const float Collider::getRotation() {
+inline float Collider::getRotation() const {
     return transform.rot;
 }
-AABB Collider::getBoundingBox() {
+AABB Collider::getBoundingBox() const {
     return boundingBox;
 }
-Shape* Collider::getShape() {
+Shape* Collider::getShape() const{
     return shape;
 }
 void Collider::setPosition(Vector2f pos) {
@@ -27,13 +27,13 @@ void Collider::setRotation(float rot) {
     transform.rot = rot;
     updateBounds();
 }
-bool Collider::checkPoint(Vector2f point) {
+bool Collider::checkPoint(Vector2f point) const {
     return shape->checkPoint(transform, point);
 }
 void Collider::updateBounds() {
     boundingBox = shape->getBoundingBox(transform);
 }
-bool Collider::checkCollision(Collider* other) {
+bool Collider::checkCollision(Collider* other) const {
     if (!boundingBox.checkOverlap(other->boundingBox)) return false;
 
     vector<Vector2f> normalVectors;
@@ -56,7 +56,7 @@ bool Collider::checkCollision(Collider* other) {
     return true;
 }
 
-CollisionManifold Collider::getCollision(Collider* other) {
+CollisionManifold Collider::getCollision(Collider* other) const {
     CollisionManifold res;
     if (!boundingBox.checkOverlap(other->boundingBox)) return res;
 
@@ -109,7 +109,7 @@ float Collider::pointSegmentDistace(Vector2f P, Vector2f A, Vector2f B, Vector2f
     }
     return VectorMaths::magnitudeSqr(P - contactPoint);
 }
-std::optional<Vector2f> Collider::getContactPoint(Collider* other) {
+std::optional<Vector2f> Collider::getContactPoint(Collider* other) const {
     if (this->getShape()->getType() == Shape::Type::Circle && this->getShape()->getType() == Shape::Type::Circle) {
         return CircleCircleHelper(this->transform, ((Circle*)this->getShape())->getRadius(), other->transform, ((Circle*)other->getShape())->getRadius());
     }
@@ -122,7 +122,7 @@ std::optional<Vector2f> Collider::getContactPoint(Collider* other) {
     return PolygonPolygonHelper(this->transform, this->getShape()->getPoints(), other->transform, other->getShape()->getPoints());
 }
 
-std::optional<Vector2f> Collider::CircleCircleHelper(Transform& transformA, float radiusA, Transform& transformB, float radiusB) {
+std::optional<Vector2f> Collider::CircleCircleHelper(const Transform& transformA, float radiusA, const Transform& transformB, float radiusB) {
     const Vector2f displacement = transformA.pos - transformB.pos;
     if (VectorMaths::magnitude(displacement) > radiusA + radiusB) {
         //return {};
@@ -130,7 +130,7 @@ std::optional<Vector2f> Collider::CircleCircleHelper(Transform& transformA, floa
     const Vector2f d = VectorMaths::normalise(displacement);
     return (transformA.pos + d * radiusA + transformB.pos - d * radiusB) * 0.5f; 
 }
-std::optional<Vector2f> Collider::CirclePolygonHelper(Transform& transformA, float radiusA, Transform& transformB, vector<Vector2f> pointsB) {
+std::optional<Vector2f> Collider::CirclePolygonHelper(const Transform& transformA, float radiusA, const Transform& transformB, vector<Vector2f> pointsB) {
     float minDistace;
     Vector2f cp;
     for (size_t i = 0; i < pointsB.size(); i++) {
@@ -149,7 +149,7 @@ std::optional<Vector2f> Collider::CirclePolygonHelper(Transform& transformA, flo
     }
     return cp;
 }
-std::optional<Vector2f> Collider::PolygonPolygonHelper(Transform& transformA, vector<Vector2f> pointsA, Transform& transformB, vector<Vector2f> pointsB) {
+std::optional<Vector2f> Collider::PolygonPolygonHelper(const Transform& transformA, vector<Vector2f> pointsA, const Transform& transformB, vector<Vector2f> pointsB) {
     Vector2f contact1 = VectorMaths::zero();
     Vector2f contact2 = VectorMaths::zero();
     float minDistace = FLT_MAX;

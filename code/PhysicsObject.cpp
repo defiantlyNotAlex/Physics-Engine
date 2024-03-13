@@ -6,6 +6,11 @@ float PhysicsObject::gravity = 200;
 float PhysicsObject::drag = 0.001; 
 float PhysicsObject::angularDrag = 2;
 
+void PhysicsObject::physicsUpdate(float dt) {
+    for (PhysicsObject * obj : *objectList) {
+        obj->move(dt);
+    }
+}
 
 PhysicsObject::PhysicsObject(Node* _parent, Transform _transform, Collider* _collider, float _mass, float _inertia) : Node (_parent, _transform) {
     objectList->push_back(this);
@@ -43,12 +48,10 @@ Vector2f PhysicsObject::getLinearVel(Vector2f point) {
     Vector2f displacement = point - getPosition();
     return velocity + angularVelocity * VectorMaths::rotate90_CW(displacement);
 }
-void PhysicsObject::update(float dt) {
-    applyForce(dt, VectorMaths::down() * gravity * this->mass, transform.pos);
-    move(dt);
-}
 
 void PhysicsObject::move(float dt) {
+    applyForce(dt, VectorMaths::down() * gravity * this->mass, transform.pos);
+
     if (lockPosition) velocity = VectorMaths::zero();
     if (lockRotation) angularVelocity = 0;
 
@@ -152,7 +155,7 @@ void PhysicsObject::applyTorque(float dt, float torque) {
 }
 /// @brief finds if the PhysicsObject is colliding with anything
 /// @return the first object it finds returns nullptr if there are no collisions
-PhysicsObject* const PhysicsObject::getOverlap() {
+PhysicsObject* PhysicsObject::getOverlap() const {
     for (PhysicsObject* other : *objectList) {
         if (other != this && this->collider->checkCollision(other->collider)) {
             return other;
@@ -160,7 +163,7 @@ PhysicsObject* const PhysicsObject::getOverlap() {
     }
     return nullptr;
 }
-vector<PhysicsObject*> const PhysicsObject::getAllOverlap() {
+vector<PhysicsObject*> PhysicsObject::getAllOverlap() const{
     vector<PhysicsObject*> returnArray;
     for (PhysicsObject* other : *objectList) {
         if (other != this && this->collider->checkCollision(other->collider)) {
@@ -169,7 +172,7 @@ vector<PhysicsObject*> const PhysicsObject::getAllOverlap() {
     }
     return returnArray;
 }
-bool const PhysicsObject::checkPoint(Vector2f point) {
+bool PhysicsObject::checkPoint(Vector2f point) const {
     for (PhysicsObject* other : *objectList) {
         if (other != this && other->collider->checkPoint(point)) {
             return true;

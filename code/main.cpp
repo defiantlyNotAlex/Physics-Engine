@@ -14,7 +14,7 @@ int main() {
     }
 
     sf::Clock deltaClock;
-    sf::RenderWindow window(sf::VideoMode(1200, 1000), "physics");   
+    sf::RenderWindow window(sf::VideoMode(1200, 1000), "Physics Sandbox");   
 
     Node* root = new Node(nullptr, Transform({0, 0}));
     Camera* camera = (Camera*)root->addChild(new Camera(root, &window, Transform({0, 0}, 0), 1));
@@ -34,7 +34,12 @@ int main() {
     PhysicsObject* T = (PhysicsObject*)root->addChild(new PhysicsObject(root, E->transform, E, 1, 3333));
     //PhysicsObject* U = (PhysicsObject*)root->addChild(new PhysicsObject(root, F->transform, F, 1, 3333));
 
-
+    for (int i = 0; i < 10; i++) {
+        for (int j = 0; j < 10; j++) {
+            Transform t = Transform({i * 20, j * 20 - 400}, (float)rand()/(float)RAND_MAX);
+            root->addChild(new PhysicsObject(root, t, new Collider(root, t, new Rect({10, 10})), 0.1, 333));
+        }
+    }
     P->lockPosition = true;
     //P->lockRotation = true;
 
@@ -69,7 +74,7 @@ int main() {
             if (event.type == sf::Event::Closed)
                 window.close();
         }
-        
+        PhysicsObject::physicsUpdate(dt);
 
         
         if (time > 1) {
@@ -80,14 +85,10 @@ int main() {
 
         text.setString("mousePos: " + std::to_string(mouseWorldPos.x) + ", " + std::to_string(mouseWorldPos.y));
         window.clear();
-    
+        for (PhysicsObject* obj : *PhysicsObject::objectList) {
+            camera->drawShape(obj->transform, obj->collider->getShape());
+        }
         window.draw(text);
-        camera->drawShape(A->transform, A->getShape());
-        camera->drawShape(B->transform, B->getShape());
-        camera->drawShape(C->transform, C->getShape());
-        //camera->drawShape(D->transform, D->getShape());
-        camera->drawShape(E->transform, E->getShape());
-        //camera->drawShape(F->transform, F->getShape());
         window.display(); 
         
               
