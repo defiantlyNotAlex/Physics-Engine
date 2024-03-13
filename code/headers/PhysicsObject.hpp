@@ -3,10 +3,22 @@
 #include "Collider.hpp"
 
 class PhysicsObject : public Node {
-    private:
-        void Collision(float dt, PhysicsObject* other);
     public:
-        static vector<PhysicsObject*>* objectList;
+        struct CollisionManifold {
+            public:
+                PhysicsObject* bodyA;
+                PhysicsObject* bodyB;
+                Vector2f relativeVelocity[2];
+                Vector2f contacts[2];
+                size_t contactCount;
+                Vector2f normal;
+                float depth;
+        };
+
+        static vector<PhysicsObject*>* objectList; // move to world
+        static void physicsUpdate(float dt);
+        static std::optional<CollisionManifold> getCollision(PhysicsObject* A, PhysicsObject* B);
+        static PhysicsObject* getObjectAtPoint(Vector2f point);
 
         static float gravity;
         static float drag;
@@ -31,7 +43,7 @@ class PhysicsObject : public Node {
         bool lockPosition = false;
 
         Collider* collider;
-        vector<Vector2i> chunkList;
+        //vector<Vector2i> chunkList;
 
         void update(float dt);
         /// @brief attempts to move and rotate
@@ -45,9 +57,8 @@ class PhysicsObject : public Node {
         void setRotation(float rot);
 
         Vector2f getLinearVel(Vector2f point);
+        static void getImpulses(CollisionManifold cm);
+        static void resolveCollision(CollisionManifold cm);
 
-        PhysicsObject* const getOverlap();
-        vector<PhysicsObject*> const getAllOverlap();
         bool const checkPoint(Vector2f point);
-        static PhysicsObject* getObjectAtPoint(Vector2f point);
 };

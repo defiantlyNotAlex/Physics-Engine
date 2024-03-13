@@ -4,6 +4,8 @@
 using std::vector;
 
 class Node {
+    private:
+        
     public:
         static Node* root;
 
@@ -15,8 +17,11 @@ class Node {
         Node(Node* parent, Transform _transform);
         Node();
         ~Node();
-
+ 
         virtual void update(float dt);
+        //virtual void lateUpdate(float dt);
+        //virtual void start();
+
         Node* addChild(Node* component);
         void removeChild(Node* component);
 };
