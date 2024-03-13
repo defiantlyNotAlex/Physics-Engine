@@ -6,7 +6,7 @@ Polygon::Polygon(vector<Vector2f> _points) : Shape(Shape::Type::Polygon) {
 vector<Vector2f> Polygon::getPoints(){
     return points;
 }
-const size_t Polygon::getNormalVectors(Transform transform, vector<Vector2f>& out) {
+size_t Polygon::getNormalVectors(Transform transform, vector<Vector2f>& out) const {
     for (size_t i = 1; i < points.size(); i++) {
         auto prev = transform.convertLocaltoWorld(points[i-1]);
         auto curr = transform.convertLocaltoWorld(points[i]);
@@ -14,7 +14,7 @@ const size_t Polygon::getNormalVectors(Transform transform, vector<Vector2f>& ou
     }
     return points.size();
 }
-const float Polygon::getMaxProjection(Transform transform, Vector2f normal) {
+float Polygon::getMaxProjection(Transform transform, Vector2f normal) const {
     float max;
     for (size_t i = 0; i < points.size(); i++) {
         float d = VectorMaths::dotProd(normal, transform.convertLocaltoWorld(points[i]));
@@ -24,7 +24,7 @@ const float Polygon::getMaxProjection(Transform transform, Vector2f normal) {
     }
     return max;
 }
-const float Polygon::getMinProjection(Transform transform, Vector2f normal) {
+float Polygon::getMinProjection(Transform transform, Vector2f normal) const {
     float min;
     for (size_t i = 0; i < points.size(); i++) {
         float d = VectorMaths::dotProd(normal, transform.convertLocaltoWorld(points[i]));
@@ -34,14 +34,14 @@ const float Polygon::getMinProjection(Transform transform, Vector2f normal) {
     }
     return min;
 }
-const vector<Edge> Polygon::getEdges(Transform transform, Vector2f normal) {
+vector<Edge> Polygon::getEdges(Transform transform, Vector2f normal) const {
     vector<Edge> returnArray;
     for (size_t i = 0; i < points.size(); i++) {
         returnArray.push_back(Edge(points[i], points[(i+1)%points.size()]));
     }
     return returnArray;
 }
-const bool Polygon::checkPoint(Transform transform, Vector2f point) {
+bool Polygon::checkPoint(Transform transform, Vector2f point) const {
     for (size_t i = 0; i < points.size(); i++) {
         auto prev = transform.convertLocaltoWorld(points[i]);
         auto curr = transform.convertLocaltoWorld(points[(i+1)%points.size()]);
@@ -53,7 +53,7 @@ const bool Polygon::checkPoint(Transform transform, Vector2f point) {
     }
     return true;
 }
-const AABB Polygon::getBoundingBox(Transform transform) {
+AABB Polygon::getBoundingBox(Transform transform) const {
     AABB newBoundingBox;
     for (size_t i = 0; i < points.size(); i++) {
         Vector2f d = transform.convertLocaltoWorld(points[i]);

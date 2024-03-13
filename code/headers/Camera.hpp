@@ -13,8 +13,9 @@ class Camera : public Node {
         const sf::RenderWindow* getWindow();
     
         Camera(Node* parent, sf::RenderWindow * window, Transform _transform, float _scale);
-        Vector2f convertWorldtoDisplay(Vector2f world);
-        Vector2f convertDisplaytoWorld(Vector2f display);
+        
+        Vector2f convertWorldtoDisplay(Vector2f world) const;
+        Vector2f convertDisplaytoWorld(Vector2f display) const;
 
         void drawShape(Transform shapeTransform, Shape* shape, sf::Color colour = sf::Color::White, sf::Texture* sprite = nullptr);
         void drawRect(Transform rectTransform, Vector2f size, sf::Color colour = sf::Color::White, sf::Texture* sprite = nullptr);

@@ -6,6 +6,8 @@
 using std::vector;
 #include <iostream>
 
+/// @brief Defines and edge of a shap
+/// (currently unused)
 struct Edge {
     public:
         Vector2f start;
@@ -16,6 +18,7 @@ struct Edge {
         void const printEdge() {std::cout << "start: " << VectorMaths::toString(start) << " end: " << VectorMaths::toString(end) << std::endl;}
 };
 
+/// @brief Defines a shape all values are in local coordinates and must be converted
 class Shape {
     public:
         enum class Type {
@@ -31,12 +34,12 @@ class Shape {
 
         virtual vector<Vector2f> getPoints();
 
-        virtual const size_t getNormalVectors(Transform transform, vector<Vector2f>& out) = 0;
-        virtual const float getMaxProjection(Transform transform, Vector2f normal) = 0;
-        virtual const float getMinProjection(Transform transform, Vector2f normal) = 0;
-        virtual const vector<Edge> getEdges(Transform transform, Vector2f normal) = 0;
-        virtual const bool checkPoint(Transform transform, Vector2f point) = 0;
-        virtual const AABB getBoundingBox(Transform transform) = 0;
+        virtual size_t getNormalVectors(Transform transform, vector<Vector2f>& out) const = 0;
+        virtual float getMaxProjection(Transform transform, Vector2f normal) const = 0;
+        virtual float getMinProjection(Transform transform, Vector2f normal) const = 0;
+        virtual vector<Edge> getEdges(Transform transform, Vector2f normal) const = 0;
+        virtual bool checkPoint(Transform transform, Vector2f point) const = 0;
+        virtual AABB getBoundingBox(Transform transform) const = 0;
 };
 
 class Rect : public Shape {
@@ -49,12 +52,12 @@ class Rect : public Shape {
         Vector2f getSize();
         vector<Vector2f> getPoints();
 
-        const size_t getNormalVectors(Transform transform, vector<Vector2f>& out);
-        const float getMaxProjection(Transform transform, Vector2f normal);
-        const float getMinProjection(Transform transform, Vector2f normal);
-        const vector<Edge> getEdges(Transform transform, Vector2f normal);
-        const bool checkPoint(Transform transform, Vector2f point);
-        const AABB getBoundingBox(Transform transform);
+        size_t getNormalVectors(Transform transform, vector<Vector2f>& out) const;
+        float getMaxProjection(Transform transform, Vector2f normal) const;
+        float getMinProjection(Transform transform, Vector2f normal) const;
+        vector<Edge> getEdges(Transform transform, Vector2f normal) const;
+        bool checkPoint(Transform transform, Vector2f point) const;
+        AABB getBoundingBox(Transform transform) const;
 };
 
 class Circle : public Shape {
@@ -65,12 +68,12 @@ class Circle : public Shape {
         
         float getRadius();
 
-        const size_t getNormalVectors(Transform transform, vector<Vector2f>& out);
-        const float getMaxProjection(Transform transform, Vector2f normal);
-        const float getMinProjection(Transform transform, Vector2f normal);
-        const vector<Edge> getEdges(Transform transform, Vector2f normal);
-        const bool checkPoint(Transform transform, Vector2f point);
-        const AABB getBoundingBox(Transform transform);
+        size_t getNormalVectors(Transform transform, vector<Vector2f>& out) const;
+        float getMaxProjection(Transform transform, Vector2f normal) const;
+        float getMinProjection(Transform transform, Vector2f normal) const;
+        vector<Edge> getEdges(Transform transform, Vector2f normal) const;
+        bool checkPoint(Transform transform, Vector2f point) const;
+        AABB getBoundingBox(Transform transform) const;
 };
 
 class Polygon : public Shape {
@@ -81,10 +84,10 @@ class Polygon : public Shape {
         
         vector<Vector2f> getPoints();
 
-        const size_t getNormalVectors(Transform transform, vector<Vector2f>& out);
-        const float getMaxProjection(Transform transform, Vector2f normal);
-        const float getMinProjection(Transform transform, Vector2f normal);
-        const vector<Edge> getEdges(Transform transform, Vector2f normal);
-        const bool checkPoint(Transform transform, Vector2f point);
-        const AABB getBoundingBox(Transform transform);
+        size_t getNormalVectors(Transform transform, vector<Vector2f>& out) const;
+        float getMaxProjection(Transform transform, Vector2f normal) const;
+        float getMinProjection(Transform transform, Vector2f normal) const;
+        vector<Edge> getEdges(Transform transform, Vector2f normal) const;
+        bool checkPoint(Transform transform, Vector2f point) const;
+        AABB getBoundingBox(Transform transform) const;
 };

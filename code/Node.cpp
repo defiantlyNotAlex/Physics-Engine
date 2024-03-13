@@ -15,9 +15,7 @@ Node::~Node() {
 }
 
 void Node::update(float dt) {
-    for (Node* child : children) {
-        child->update(dt);
-    }
+    
 }
 Node* Node::addChild(Node* child) {
     children.push_back(child);

@@ -27,7 +27,7 @@ PhysicsObject::~PhysicsObject() {
     delete(collider);
     objectList->erase(std::remove(objectList->begin(), objectList->end(), this), objectList->end());
 }
-Vector2f PhysicsObject::getPosition() {
+Vector2f PhysicsObject::getPosition() const {
     return transform.pos;
 }
 void PhysicsObject::setPosition(Vector2f pos) {
@@ -36,7 +36,7 @@ void PhysicsObject::setPosition(Vector2f pos) {
     transform.pos = pos;
     collider->setPosition(pos);
 }
-float PhysicsObject::getRotation() {
+float PhysicsObject::getRotation() const {
     return transform.rot;
 }
 void PhysicsObject::setRotation(float rot) {
@@ -44,7 +44,7 @@ void PhysicsObject::setRotation(float rot) {
     transform.rot = rot;
     collider->setRotation(rot);
 }
-Vector2f PhysicsObject::getLinearVel(Vector2f point) {
+Vector2f PhysicsObject::getLinearVel(Vector2f point) const {
     Vector2f displacement = point - getPosition();
     return velocity + angularVelocity * VectorMaths::rotate90_CW(displacement);
 }
@@ -56,14 +56,16 @@ void PhysicsObject::move(float dt) {
     if (lockRotation) angularVelocity = 0;
 
     if (lockPosition && lockRotation) return;
+
+    // air drag and rotational drag
+    // drag is proportional to velocity squared
+    // rotational drag is proportional to the angular velocity squared
     applyForce(dt, -velocity * VectorMaths::magnitude(velocity) * drag, this->getPosition());
     applyTorque(dt, -angularDrag * angularVelocity * angularVelocity);
 
-    auto pos = transform.pos;
-    auto rot = transform.rot;
-
     auto moveTo = transform.pos + velocity * dt;
     auto rotateTo = transform.rot + angularVelocity * dt;
+
     if (!lockPosition) {
         transform.pos = moveTo;
         collider->setPosition(moveTo);    
@@ -72,6 +74,7 @@ void PhysicsObject::move(float dt) {
         transform.rot = rotateTo;
         collider->setRotation(rotateTo);
     }
+
     vector<PhysicsObject*> others = getAllOverlap();
     for (PhysicsObject* other : others) {
         Collision(dt, other);

@@ -6,21 +6,21 @@ Circle::Circle(float _radius) : Shape(Shape::Type::Circle) {
 float Circle::getRadius() {
     return radius;
 }
-const size_t Circle::getNormalVectors(Transform transform, vector<Vector2f>& out) {
+size_t Circle::getNormalVectors(Transform transform, vector<Vector2f>& out)const {
     return 0;
 }
-const float Circle::getMaxProjection(Transform transform, Vector2f normal) {
+float Circle::getMaxProjection(Transform transform, Vector2f normal)const {
     return VectorMaths::dotProd(transform.pos, normal) + radius;
 }
-const float Circle::getMinProjection(Transform transform, Vector2f normal) {
+float Circle::getMinProjection(Transform transform, Vector2f normal)const {
     return VectorMaths::dotProd(transform.pos, normal) - radius;
 }
-const vector<Edge> Circle::getEdges(Transform transform, Vector2f normal) {
+vector<Edge> Circle::getEdges(Transform transform, Vector2f normal)const {
     return {};
 }
-const bool Circle::checkPoint(Transform transform, Vector2f point) {
+bool Circle::checkPoint(Transform transform, Vector2f point)const {
     return VectorMaths::magnitudeSqr(transform.pos - point) < radius * radius;
 }
-const AABB Circle::getBoundingBox(Transform transform) {
+AABB Circle::getBoundingBox(Transform transform) const {
     return AABB(transform.pos - Vector2f(radius, radius), transform.pos + Vector2f(radius, radius));
 }

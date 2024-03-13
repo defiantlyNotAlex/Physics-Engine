@@ -14,12 +14,12 @@ const sf::RenderWindow* Camera::getWindow() {
     return window;
 }
 
-Vector2f Camera::convertWorldtoDisplay(Vector2f world) {
+Vector2f Camera::convertWorldtoDisplay(Vector2f world) const {
     const Vector2f local = transform.convertWorldtoLocal(world); 
     const Vector2f adjusted = local * scale;
     return adjusted + Vector2f(window->getSize().x, window->getSize().y)/2.f;
 }
-Vector2f Camera::convertDisplaytoWorld(Vector2f display) {
+Vector2f Camera::convertDisplaytoWorld(Vector2f display) const {
     const Vector2f adjusted = display - Vector2f(window->getSize().x, window->getSize().y)/2.f;
     const Vector2f local = adjusted / scale;
     return transform.convertLocaltoWorld(local);

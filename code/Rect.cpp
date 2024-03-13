@@ -1,5 +1,4 @@
-#include "headers/Shape.hpp"
-
+#include "headers/Shape.hpp" 
 Rect::Rect(Vector2f _size) : Shape(Shape::Type::Rect) {
     size = _size;
     const Vector2f halfSize = size/2.f;
@@ -16,12 +15,12 @@ Vector2f Rect::getSize() {
 vector<Vector2f> Rect::getPoints() {
     return points;
 }
-const size_t Rect::getNormalVectors(Transform transform, vector<Vector2f>& out) {
+size_t Rect::getNormalVectors(Transform transform, vector<Vector2f>& out) const {
     out.push_back(VectorMaths::directionVector(transform.rot));
     out.push_back(VectorMaths::directionVector(transform.rot + FloatMaths::half_pi));
     return 2;
 }
-const float Rect::getMaxProjection(Transform transform, Vector2f normal) {
+float Rect::getMaxProjection(Transform transform, Vector2f normal) const {
     float max;
     for (size_t i = 0; i < points.size(); i++) {
         float d = VectorMaths::dotProd(normal, transform.convertLocaltoWorld(points[i]));
@@ -31,7 +30,7 @@ const float Rect::getMaxProjection(Transform transform, Vector2f normal) {
     }
     return max;
 }
-const float Rect::getMinProjection(Transform transform, Vector2f normal) {
+float Rect::getMinProjection(Transform transform, Vector2f normal) const {
     float min;
     for (size_t i = 0; i < points.size(); i++) {
         float d = VectorMaths::dotProd(normal, transform.convertLocaltoWorld(points[i]));
@@ -41,14 +40,14 @@ const float Rect::getMinProjection(Transform transform, Vector2f normal) {
     }
     return min;
 }
-const vector<Edge> Rect::getEdges(Transform transform, Vector2f normal) {
+vector<Edge> Rect::getEdges(Transform transform, Vector2f normal) const {
     vector<Edge> returnArray;
     for (size_t i = 0; i < points.size(); i++) {
         returnArray.push_back(Edge(points[i], points[(i+1)%points.size()]));
     }
     return returnArray;
 }
-const bool Rect::checkPoint(Transform transform, Vector2f point) {
+bool Rect::checkPoint(Transform transform, Vector2f point) const {
     for (size_t i = 0; i < points.size(); i++) {
         auto prev = transform.convertLocaltoWorld(points[i]);
         auto curr = transform.convertLocaltoWorld(points[(i+1)%points.size()]);
@@ -60,7 +59,7 @@ const bool Rect::checkPoint(Transform transform, Vector2f point) {
     }
     return true;
 }
-const AABB Rect::getBoundingBox(Transform transform) {
+AABB Rect::getBoundingBox(Transform transform) const {
     AABB newBoundingBox;
     for (size_t i = 0; i < points.size(); i++) {
         Vector2f d = transform.convertLocaltoWorld(points[i]);

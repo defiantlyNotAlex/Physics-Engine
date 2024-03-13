@@ -33,18 +33,20 @@ class PhysicsObject : public Node {
         Collider* collider;
         vector<Vector2i> chunkList;
 
+        /// @brief updates all physics objects
+        /// @param dt 
         static void physicsUpdate(float dt);
         /// @brief attempts to move and rotate
         void move(float dt);
         void applyForce(float dt, Vector2f force, Vector2f forcePos);
         void applyTorque(float dt, float torque);
 
-        Vector2f getPosition();
+        Vector2f getPosition() const;
         void setPosition(Vector2f pos);
-        float getRotation();
+        float getRotation() const;
         void setRotation(float rot);
 
-        Vector2f getLinearVel(Vector2f point);
+        Vector2f getLinearVel(Vector2f point) const;
 
         PhysicsObject* getOverlap() const;
         vector<PhysicsObject*> getAllOverlap() const;

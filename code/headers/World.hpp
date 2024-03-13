@@ -3,9 +3,11 @@
 #include "Camera.hpp"
 #include "PhysicsObject.hpp"
 
-class Game {
+class World {
     public:
-        Game(sf::RenderWindow& window);
+        sf::RenderWindow* window;
+
+        World(sf::RenderWindow* window);
         Node* root;
         Camera* mainCamera;
 
