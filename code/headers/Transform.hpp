@@ -10,6 +10,6 @@ class Transform {
         Transform();
         Vector2f pos;
         float rot;
-        Vector2f convertLocaltoWorld(Vector2f localPos);
-        Vector2f convertWorldtoLocal(Vector2f worldPos);
+        Vector2f convertLocaltoWorld(Vector2f localPos) const;
+        Vector2f convertWorldtoLocal(Vector2f worldPos) const;
 };

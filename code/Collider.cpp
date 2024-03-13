@@ -7,16 +7,16 @@ Collider::Collider(Node* _parent, Transform _transform, Shape* _shape) : Node (_
 }
 Collider::~Collider() {}
 
-inline const Vector2f Collider::getPosition() {
+inline Vector2f Collider::getPosition() const {
     return transform.pos;
 }
-inline const float Collider::getRotation() {
+inline float Collider::getRotation() const {
     return transform.rot;
 }
-AABB Collider::getBoundingBox() {
+AABB Collider::getBoundingBox() const {
     return boundingBox;
 }
-Shape* Collider::getShape() {
+Shape* Collider::getShape() const{
     return shape;
 }
 void Collider::setPosition(Vector2f pos) {
@@ -27,13 +27,13 @@ void Collider::setRotation(float rot) {
     transform.rot = rot;
     updateBounds();
 }
-bool Collider::checkPoint(Vector2f point) {
+bool Collider::checkPoint(Vector2f point) const {
     return shape->checkPoint(transform, point);
 }
 void Collider::updateBounds() {
     boundingBox = shape->getBoundingBox(transform);
 }
-bool Collider::checkCollision(Collider* other) {
+bool Collider::checkCollision(Collider* other) const {
     if (!boundingBox.checkOverlap(other->boundingBox)) return false;
 
     vector<Vector2f> normalVectors;

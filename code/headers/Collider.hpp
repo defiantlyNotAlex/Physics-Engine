@@ -21,17 +21,18 @@ class Collider : public Node {
         Collider(Node* _parent, Transform _transform, Shape * _shape);
         ~Collider();
 
-        inline const Vector2f getPosition();
-        inline const float getRotation();
+        inline Vector2f getPosition() const;
+        inline float getRotation() const;
 
         void setPosition(Vector2f pos);
         void setRotation(float rot);
 
-        AABB getBoundingBox();
-        Shape* getShape();
+        void updateBounds();
+        AABB getBoundingBox() const;
+        Shape* getShape() const;
 
-        bool checkPoint(Vector2f point);
-        bool checkCollision(Collider * other);
+        bool checkPoint(Vector2f point) const;
+        bool checkCollision(Collider * other) const;
 
         bool getCollision(Collider* other, float& depth, Vector2f& normal);
         size_t getContactPoint(Vector2f* out, Collider* other);

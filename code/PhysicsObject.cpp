@@ -6,6 +6,11 @@ float PhysicsObject::gravity = 200;
 float PhysicsObject::drag = 0.001; 
 float PhysicsObject::angularDrag = 2;
 
+void PhysicsObject::physicsUpdate(float dt) {
+    for (PhysicsObject * obj : *objectList) {
+        obj->move(dt);
+    }
+}
 
 PhysicsObject::PhysicsObject(Node* _parent, Transform _transform, Collider* _collider, float _mass, float _inertia) : Node (_parent, _transform) {
     objectList->push_back(this);
@@ -62,8 +67,6 @@ void PhysicsObject::setRotation(float rot) {
 Vector2f PhysicsObject::getLinearVel(Vector2f point) {
     Vector2f displacement = point - getPosition();
     return velocity + angularVelocity * VectorMaths::rotate90_CW(displacement);
-}
-void PhysicsObject::update(float dt) {
 }
 
 void PhysicsObject::move(float dt) {
@@ -173,7 +176,26 @@ void PhysicsObject::applyForce(float dt, Vector2f force, Vector2f forcePos) {
 void PhysicsObject::applyTorque(float dt, float torque) {
     angularVelocity += torque * dt / inertia;
 }
-bool const PhysicsObject::checkPoint(Vector2f point) {
+/// @brief finds if the PhysicsObject is colliding with anything
+/// @return the first object it finds returns nullptr if there are no collisions
+PhysicsObject* PhysicsObject::getOverlap() const {
+    for (PhysicsObject* other : *objectList) {
+        if (other != this && this->collider->checkCollision(other->collider)) {
+            return other;
+        }
+    }
+    return nullptr;
+}
+vector<PhysicsObject*> PhysicsObject::getAllOverlap() const{
+    vector<PhysicsObject*> returnArray;
+    for (PhysicsObject* other : *objectList) {
+        if (other != this && this->collider->checkCollision(other->collider)) {
+            returnArray.push_back(other);
+        }
+    }
+    return returnArray;
+}
+bool PhysicsObject::checkPoint(Vector2f point) const {
     for (PhysicsObject* other : *objectList) {
         if (other != this && other->collider->checkPoint(point)) {
             return true;

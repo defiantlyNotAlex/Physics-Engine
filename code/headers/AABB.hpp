@@ -8,6 +8,6 @@ class AABB {
     Vector2f min;
     Vector2f max;
 
-    bool const checkOverlap(AABB other);
-    bool const checkPoint(Vector2f point);
+    bool checkOverlap(AABB other) const;
+    bool checkPoint(Vector2f point) const;
 };
