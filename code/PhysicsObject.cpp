@@ -31,21 +31,6 @@ void PhysicsObject::physicsUpdate(float dt) {
     for (PhysicsObject* obj : *objectList) {
         obj->move(dt);
     }
-    vector<CollisionManifold> collisionList;
-    for (size_t i = 0; i < objectList->size(); i++) {
-        for (size_t j = i + 1; j < objectList->size(); j++) {
-            std::optional<CollisionManifold> cm = getCollision((*objectList)[i], (*objectList)[j]);
-            if (cm.has_value()) {
-                collisionList.push_back(cm.value());
-            }
-        }
-    }
-    for (size_t i = 0; i < collisionList.size(); i++) {
-        getImpulses(collisionList[i]);    
-    }
-    for (size_t i = 0; i < collisionList.size(); i++) {
-        resolveCollision(collisionList[i]);
-    }
 }
 Vector2f PhysicsObject::getPosition() {
     return transform.pos;
