@@ -15,7 +15,7 @@ class Node {
         Node(Node* parent, Transform _transform);
         Node();
         ~Node();
-
+        void propagateUpdate(float dt);
         virtual void update(float dt);
         Node* addChild(Node* component);
         void removeChild(Node* component);

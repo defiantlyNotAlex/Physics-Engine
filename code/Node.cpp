@@ -13,12 +13,16 @@ Node::~Node() {
         delete(child);
     }
 }
-
 void Node::update(float dt) {
-    for (Node* child : children) {
-        child->update(dt);
+    return;
+}
+void Node::propagateUpdate(float dt) {
+    update(dt);
+    for (Node* obj : children) {
+        obj->propagateUpdate(dt);
     }
 }
+
 Node* Node::addChild(Node* child) {
     children.push_back(child);
     return child;

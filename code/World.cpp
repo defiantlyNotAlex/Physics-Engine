@@ -2,9 +2,9 @@
 World::World() {
 
 }
+
 void World::update(float dt) {
-    // make it recursively call update so that it doesn't need to be done in the root
-    root->update(dt);
+    root->propagateUpdate(dt);
 }
 void World::physicsUpdate(float dt, size_t iterations) {
     // step

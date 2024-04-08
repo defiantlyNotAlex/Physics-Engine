@@ -35,7 +35,6 @@ class PhysicsObject : public Node {
         Collider* collider;
         vector<Vector2i> chunkList;
 
-        void update(float dt);
         /// @brief attempts to move and rotate
         void step(float dt);
         void applyForce(float dt, Vector2f force, Vector2f forcePos);
