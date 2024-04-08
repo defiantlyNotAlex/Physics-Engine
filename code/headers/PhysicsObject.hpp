@@ -11,7 +11,7 @@ class PhysicsObject : public Node {
         static float drag;
         static float angularDrag;
 
-        PhysicsObject(Node* _parent, Transform _transform, Collider* _collider, float _mass = 1, float _inertia = 1000, bool lockPos = false, bool lockRot = false);
+        PhysicsObject(Node* _parent, Transform _transform, Collider* _collider, float _mass = 1, float _inertia = 1000, bool _isStatic = false);
         ~PhysicsObject();
 
         Vector2f velocity;
@@ -29,8 +29,7 @@ class PhysicsObject : public Node {
             float elasticity;
         } material;
 
-        bool lockRotation = false;
-        bool lockPosition = false;
+        bool isStatic = false;
 
         Collider* collider;
         vector<Vector2i> chunkList;

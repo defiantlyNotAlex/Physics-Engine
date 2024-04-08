@@ -7,11 +7,27 @@ void World::update(float dt) {
     root->propagateUpdate(dt);
 }
 void World::physicsUpdate(float dt, size_t iterations) {
-    // step
+    dt = dt / (float)iterations;
+    for (size_t it = 0; it < iterations; it++) {
+        for (PhysicsObject* obj : objectList) {
+            obj->step(dt);
+        }
 
-    // get collisions
+        vector<CollisionManifold> collisions;
+        
+        for (size_t i = 0; i < objectList.size(); i++) {
+            for (size_t j = i + 1; j < objectList.size(); j++) {
+                if (objectList[i]->isStatic && objectList[j]->isStatic) continue;
+                
+                // get the collision
 
-    // solve collisions
+            }
+        }
+
+        for (CollisionManifold cm : collisions) {
+            // solve collision
+        }
+    }
 }
 
 void World::delObject(PhysicsObject* obj) {

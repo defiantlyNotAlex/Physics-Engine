@@ -5,18 +5,17 @@ float PhysicsObject::drag = 0.001;
 float PhysicsObject::angularDrag = 2;
 
 
-PhysicsObject::PhysicsObject(Node* _parent, Transform _transform, Collider* _collider, float _mass, float _inertia, bool lockPos, bool lockRot) : Node (_parent, _transform) {
+PhysicsObject::PhysicsObject(Node* _parent, Transform _transform, Collider* _collider, float _mass, float _inertia, bool _isStatic) : Node (_parent, _transform) {
     collider = _collider;
     velocity = Maths::zero();
     angularVelocity = 0;
 
-    lockPosition = lockPos;
-    lockRotation = lockRot;
+    isStatic = _isStatic;
 
     mass = _mass;
     inertia = _inertia;
-    inv_mass = this->lockPosition ? 0 : 1.f / this->mass;
-    inv_inertia = this->lockRotation ? 0 : 1.f / this->inertia;
+    inv_mass = this->isStatic ? 0 : 1.f / this->mass;
+    inv_inertia = this->isStatic ? 0 : 1.f / this->inertia;
 
 
     material.elasticity = 0;
@@ -30,7 +29,7 @@ Vector2f PhysicsObject::getPosition() {
     return transform.pos;
 }
 void PhysicsObject::setPosition(Vector2f pos) {
-    if (lockPosition) return;
+    if (isStatic) return;
     transform.pos = pos;
     collider->setPosition(pos);
 }
@@ -38,7 +37,7 @@ float PhysicsObject::getRotation() {
     return transform.rot;
 }
 void PhysicsObject::setRotation(float rot) {
-    if (lockRotation) return;
+    if (isStatic) return;
     transform.rot = rot;
     collider->setRotation(rot);
 }
@@ -50,10 +49,12 @@ Vector2f PhysicsObject::getLinearVel(Vector2f point) {
 void PhysicsObject::step(float dt) {
     applyForce(dt, Maths::down() * gravity * this->mass, transform.pos);
 
-    if (lockPosition) velocity = Maths::zero();
-    if (lockRotation) angularVelocity = 0;
-
-    if (lockPosition && lockRotation) return;
+    if (isStatic) {
+        velocity = Maths::zero();
+        angularVelocity = 0;
+        return;
+    }
+    
     applyForce(dt, -velocity * Maths::magnitude(velocity) * drag, this->getPosition());
     applyTorque(dt, -angularDrag * angularVelocity * angularVelocity);
 
@@ -62,11 +63,11 @@ void PhysicsObject::step(float dt) {
 
     auto moveTo = transform.pos + velocity * dt;
     auto rotateTo = transform.rot + angularVelocity * dt;
-    if (!lockPosition) {
+
+    if (!isStatic) {
         transform.pos = moveTo;
         collider->setPosition(moveTo);    
-    }
-    if (!lockRotation) {
+
         transform.rot = rotateTo;
         collider->setRotation(rotateTo);
     }
@@ -138,11 +139,11 @@ void PhysicsObject::Collision(float dt, PhysicsObject* other) {
 }
 
 void PhysicsObject::applyForce(float dt, Vector2f force, Vector2f forcePos) {
-    velocity += dt * force / mass;
-    angularVelocity += dt * Maths::crossProd(forcePos - transform.pos, force) / inertia;
-    if (lockPosition) velocity = Maths::zero();
-    if (lockRotation) angularVelocity = 0;
+    if (isStatic) return;
+    velocity += dt * force * inv_mass;
+    angularVelocity += dt * Maths::crossProd(forcePos - transform.pos, force) * inv_inertia;
 }
 void PhysicsObject::applyTorque(float dt, float torque) {
-    angularVelocity += torque * dt / inertia;
+    if (isStatic) return;
+    angularVelocity += torque * dt * inv_inertia;
 }
