@@ -6,6 +6,11 @@ float PhysicsObject::gravity = 200;
 float PhysicsObject::drag = 0.001; 
 float PhysicsObject::angularDrag = 2;
 
+void PhysicsObject::physicsUpdate(float dt) {
+    for (PhysicsObject * obj : *objectList) {
+        obj->move(dt);
+    }
+}
 
 PhysicsObject::PhysicsObject(Node* _parent, Transform _transform, Collider* _collider, float _mass, float _inertia) : Node (_parent, _transform) {
     objectList->push_back(this);
@@ -21,6 +26,11 @@ PhysicsObject::PhysicsObject(Node* _parent, Transform _transform, Collider* _col
 PhysicsObject::~PhysicsObject() {
     delete(collider);
     objectList->erase(std::remove(objectList->begin(), objectList->end(), this), objectList->end());
+}
+void PhysicsObject::physicsUpdate(float dt) {
+    for (PhysicsObject* obj : *objectList) {
+        obj->move(dt);
+    }
 }
 Vector2f PhysicsObject::getPosition() {
     return transform.pos;
@@ -69,48 +79,51 @@ void PhysicsObject::move(float dt) {
         transform.rot = rotateTo;
         collider->setRotation(rotateTo);
     }
-    vector<PhysicsObject*> others = getAllOverlap();
-    for (PhysicsObject* other : others) {
-        Collision(dt, other);
-    } 
 }
-void PhysicsObject::Collision(float dt, PhysicsObject* other) {
-    CollisionManifold cm = collider->getCollision(other->collider);
-
-    if (!cm.contact.has_value()) {
+void PhysicsObject::resolveCollision(CollisionManifold cm) {
+    float ratio = 0;
+    
+    if (cm.bodyA->lockPosition) ratio = 0.f;
+    if (cm.bodyB->lockPosition) ratio = 1.f;
+    cm.bodyA->setPosition(cm.bodyA->getPosition() + cm.normal * cm.depth * ratio);
+    cm.bodyB->setPosition(cm.bodyB->getPosition() - cm.normal * cm.depth * (1.f - ratio));
+}
+void PhysicsObject::getImpulses(CollisionManifold cm) {
+    if (cm.contactCount == 0) {
         std::cout << cm.depth << std::endl;
         std::cout << "no point" << std::endl;
         std::cout << Maths::toString(cm.normal) << std::endl;
         return;
     }
-    this->setPosition(this->getPosition() + cm.normal * cm.depth);
-    Vector2f contact = cm.contact.value();
-    Vector2f relativeVelocity = other->getLinearVel(contact) - this->getLinearVel(contact);
 
-    const Vector2f ra = contact - this->getPosition();
-    const Vector2f rb = contact - other->getPosition();
+    for (size_t i = 0; i < cm.contactCount; i++) {
+        Vector2f contact = cm.contacts[i];
+        Vector2f relativeVelocity = cm.relativeVelocity[i];
 
-    const Vector2f raPerp = Vector2f(-ra.y, ra.x);
-    const Vector2f rbPerp = Vector2f(-rb.y, rb.x);
+        const Vector2f ra = contact - cm.bodyA->getPosition();
+        const Vector2f rb = contact - cm.bodyB->getPosition();
 
-    const float m_this_inv = this->lockPosition ? 0 : 1.f / this->mass;
-    const float m_other_inv = other->lockPosition ? 0 : 1.f / other->mass;
-    const float I_this_inv = this->lockRotation ? 0 : 1.f / this->inertia;
-    const float I_other_inv = other->lockRotation ? 0 : 1.f / other->inertia;
+        const Vector2f raPerp = Vector2f(-ra.y, ra.x);
+        const Vector2f rbPerp = Vector2f(-rb.y, rb.x);
+
+        const float m_this_inv = cm.bodyA->lockPosition ? 0 : 1.f / cm.bodyA->mass;
+        const float m_other_inv = cm.bodyB->lockPosition ? 0 : 1.f / cm.bodyB->mass;
+        const float I_this_inv = cm.bodyA->lockRotation ? 0 : 1.f / cm.bodyA->inertia;
+        const float I_other_inv = cm.bodyB->lockRotation ? 0 : 1.f / cm.bodyB->inertia;
 
     const float raPerpDotN = Maths::dotProd(raPerp, cm.normal);
     const float rbPerpDotN = Maths::dotProd(rbPerp, cm.normal);
 
-    const float denominator = m_this_inv + m_other_inv + 
-    (I_this_inv * raPerpDotN * raPerpDotN) + 
-    (I_other_inv * rbPerpDotN * rbPerpDotN);
+        const float denominator = m_this_inv + m_other_inv + 
+        (I_this_inv * raPerpDotN * raPerpDotN) + 
+        (I_other_inv * rbPerpDotN * rbPerpDotN);
 
     float restitution = this->material.elasticity * other->material.elasticity;
     const float j = -(1 + restitution) * Maths::dotProd(relativeVelocity, cm.normal) / denominator;
     Vector2f reactionImpulse = j * cm.normal;
 
-    this->applyForce(1, -reactionImpulse, contact);
-    other->applyForce(1, reactionImpulse, contact);
+        cm.bodyA->applyForce(1, -reactionImpulse, contact);
+        cm.bodyB->applyForce(1, reactionImpulse, contact);
 
     Vector2f tangent = relativeVelocity - Maths::dotProd(relativeVelocity, cm.normal) * cm.normal;
     const float staticFrictionCoeff = (this->material.staticFriction + other->material.staticFriction)*0.5f;
@@ -125,9 +138,9 @@ void PhysicsObject::Collision(float dt, PhysicsObject* other) {
     const float raPerpDotT = Maths::dotProd(raPerp, tangent);
     const float rbPerpDotT = Maths::dotProd(rbPerp, tangent);
 
-    const float denominatorFriction = m_this_inv + m_other_inv +
-        (I_this_inv * raPerpDotT * raPerpDotT) + 
-        (I_other_inv * rbPerpDotT * rbPerpDotT);
+        const float denominatorFriction = m_this_inv + m_other_inv +
+            (I_this_inv * raPerpDotT * raPerpDotT) + 
+            (I_other_inv * rbPerpDotT * rbPerpDotT);
 
     const float jt = -Maths::dotProd(relativeVelocity, tangent) / denominatorFriction;
     Vector2f frictionImpulse;
@@ -152,7 +165,7 @@ void PhysicsObject::applyTorque(float dt, float torque) {
 }
 /// @brief finds if the PhysicsObject is colliding with anything
 /// @return the first object it finds returns nullptr if there are no collisions
-PhysicsObject* const PhysicsObject::getOverlap() {
+PhysicsObject* PhysicsObject::getOverlap() const {
     for (PhysicsObject* other : *objectList) {
         if (other != this && this->collider->checkCollision(other->collider)) {
             return other;
@@ -160,7 +173,7 @@ PhysicsObject* const PhysicsObject::getOverlap() {
     }
     return nullptr;
 }
-vector<PhysicsObject*> const PhysicsObject::getAllOverlap() {
+vector<PhysicsObject*> PhysicsObject::getAllOverlap() const{
     vector<PhysicsObject*> returnArray;
     for (PhysicsObject* other : *objectList) {
         if (other != this && this->collider->checkCollision(other->collider)) {
@@ -169,7 +182,7 @@ vector<PhysicsObject*> const PhysicsObject::getAllOverlap() {
     }
     return returnArray;
 }
-bool const PhysicsObject::checkPoint(Vector2f point) {
+bool PhysicsObject::checkPoint(Vector2f point) const {
     for (PhysicsObject* other : *objectList) {
         if (other != this && other->collider->checkPoint(point)) {
             return true;
@@ -184,4 +197,18 @@ PhysicsObject* PhysicsObject::getObjectAtPoint(Vector2f point) {
         }
     }
     return nullptr;
+}
+std::optional<PhysicsObject::CollisionManifold> PhysicsObject::getCollision(PhysicsObject* A, PhysicsObject* B) {
+    CollisionManifold cm;
+    if (!A->collider->getCollision(B->collider, cm.depth, cm.normal)) {
+        return {};
+    }
+    cm.contactCount = A->collider->getContactPoint(cm.contacts, B->collider);
+    cm.bodyA = A;
+    cm.bodyB = B;
+    for (size_t i = 0; i < cm.contactCount; i++) {
+        cm.relativeVelocity[i] = -A->getLinearVel(cm.contacts[i]) + B->getLinearVel(cm.contacts[i]);
+    }
+    
+    return cm;
 }

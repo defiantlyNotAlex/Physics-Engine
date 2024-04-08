@@ -3,9 +3,11 @@
 #include "Camera.hpp"
 #include "PhysicsObject.hpp"
 
-class Game {
+// todo implement quad tree
+// implement physicsUpdate
+class World {
     public:
-        Game(sf::RenderWindow& window);
+        World(sf::RenderWindow& window);
         Node* root;
         Camera* mainCamera;
 
