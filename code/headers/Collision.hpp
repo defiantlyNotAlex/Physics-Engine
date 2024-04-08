@@ -1,5 +1,5 @@
 #pragma once
-#include "VectorMaths.hpp"
+#include "Maths.hpp"
 #include <optional>
 struct CollisionManifold {
     public:

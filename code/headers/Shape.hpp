@@ -1,5 +1,5 @@
 #pragma once
-#include "VectorMaths.hpp"
+#include "Maths.hpp"
 #include "Transform.hpp"
 #include "AABB.hpp"
 #include <vector>
@@ -13,7 +13,7 @@ struct Edge {
         Edge(Vector2f s, Vector2f e) {start = s; end = e;};
         Edge() {};
         Vector2f const edgeVector() {return end - start;};
-        void const printEdge() {std::cout << "start: " << VectorMaths::toString(start) << " end: " << VectorMaths::toString(end) << std::endl;}
+        void const printEdge() {std::cout << "start: " << Maths::toString(start) << " end: " << Maths::toString(end) << std::endl;}
 };
 
 class Shape {

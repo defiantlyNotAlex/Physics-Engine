@@ -37,7 +37,7 @@ bool Collider::checkCollision(Collider* other) {
     if (!boundingBox.checkOverlap(other->boundingBox)) return false;
 
     vector<Vector2f> normalVectors;
-    auto displacement = VectorMaths::normalise(other->getPosition() - getPosition());
+    auto displacement = Maths::normalise(other->getPosition() - getPosition());
     normalVectors.push_back(displacement);
 
     this->shape->getNormalVectors(this->transform, normalVectors);
@@ -61,7 +61,7 @@ CollisionManifold Collider::getCollision(Collider* other) {
     if (!boundingBox.checkOverlap(other->boundingBox)) return res;
 
     vector<Vector2f> normalVectors;
-    auto displacement = VectorMaths::normalise(other->getPosition() - getPosition());
+    auto displacement = Maths::normalise(other->getPosition() - getPosition());
     normalVectors.push_back(displacement);
 
     this->shape->getNormalVectors(this->transform, normalVectors);
@@ -96,8 +96,8 @@ float Collider::pointSegmentDistace(Vector2f P, Vector2f A, Vector2f B, Vector2f
     Vector2f AB = B - A;
     Vector2f AP = P - A;
 
-    float proj = VectorMaths::dotProd(AP, AB);
-    float ABlenSquared = VectorMaths::magnitudeSqr(AB);
+    float proj = Maths::dotProd(AP, AB);
+    float ABlenSquared = Maths::magnitudeSqr(AB);
     float d = proj / ABlenSquared;
 
     if (d <= 0.f) {
@@ -107,7 +107,7 @@ float Collider::pointSegmentDistace(Vector2f P, Vector2f A, Vector2f B, Vector2f
     } else {
         contactPoint = A + AB * d;
     }
-    return VectorMaths::magnitudeSqr(P - contactPoint);
+    return Maths::magnitudeSqr(P - contactPoint);
 }
 std::optional<Vector2f> Collider::getContactPoint(Collider* other) {
     if (this->getShape()->getType() == Shape::Type::Circle && this->getShape()->getType() == Shape::Type::Circle) {
@@ -124,10 +124,10 @@ std::optional<Vector2f> Collider::getContactPoint(Collider* other) {
 
 std::optional<Vector2f> Collider::CircleCircleHelper(Transform& transformA, float radiusA, Transform& transformB, float radiusB) {
     const Vector2f displacement = transformA.pos - transformB.pos;
-    if (VectorMaths::magnitude(displacement) > radiusA + radiusB) {
+    if (Maths::magnitude(displacement) > radiusA + radiusB) {
         //return {};
     }
-    const Vector2f d = VectorMaths::normalise(displacement);
+    const Vector2f d = Maths::normalise(displacement);
     return (transformA.pos + d * radiusA + transformB.pos - d * radiusB) * 0.5f; 
 }
 std::optional<Vector2f> Collider::CirclePolygonHelper(Transform& transformA, float radiusA, Transform& transformB, vector<Vector2f> pointsB) {
@@ -150,8 +150,8 @@ std::optional<Vector2f> Collider::CirclePolygonHelper(Transform& transformA, flo
     return cp;
 }
 std::optional<Vector2f> Collider::PolygonPolygonHelper(Transform& transformA, vector<Vector2f> pointsA, Transform& transformB, vector<Vector2f> pointsB) {
-    Vector2f contact1 = VectorMaths::zero();
-    Vector2f contact2 = VectorMaths::zero();
+    Vector2f contact1 = Maths::zero();
+    Vector2f contact2 = Maths::zero();
     float minDistace = FLT_MAX;
     size_t contactCount = 0;
 
@@ -162,8 +162,8 @@ std::optional<Vector2f> Collider::PolygonPolygonHelper(Transform& transformA, ve
             const Vector2f B = transformB.convertLocaltoWorld(pointsB[(j+1)%pointsB.size()]);
             Vector2f cp;
             float distSqr = pointSegmentDistace(P, A, B, cp);
-            if (FloatMaths::nearlyEqual(distSqr, minDistace)) {
-                if (!VectorMaths::nearlyEqual(cp, contact1)) {
+            if (Maths::nearlyEqual(distSqr, minDistace)) {
+                if (!Maths::nearlyEqual(cp, contact1)) {
                     contact2 = cp;
                     contactCount = 2;
                 }
@@ -181,8 +181,8 @@ std::optional<Vector2f> Collider::PolygonPolygonHelper(Transform& transformA, ve
             const Vector2f B = transformA.convertLocaltoWorld(pointsA[(j+1)%pointsA.size()]);
             Vector2f cp;
             float distSqr = pointSegmentDistace(P, A, B, cp);
-            if (FloatMaths::nearlyEqual(distSqr, minDistace)) {
-                if (!VectorMaths::nearlyEqual(cp, contact1)) {
+            if (Maths::nearlyEqual(distSqr, minDistace)) {
+                if (!Maths::nearlyEqual(cp, contact1)) {
                     contact2 = cp;
                     contactCount = 2;
                 }

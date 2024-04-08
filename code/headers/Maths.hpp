@@ -4,7 +4,6 @@
 using sf::Vector2f;
 using sf::Vector2i;
 using sf::Vector3f;
-#include "FloatMaths.hpp"
 #include <string>
 using std::string;
 #include <cmath>
@@ -13,7 +12,7 @@ using std::string;
 #include <unordered_map>
 using std::unordered_map;
 
-class VectorMaths {
+class Maths {
     public:
         static Vector2f zero();
         static Vector2f one();
@@ -55,7 +54,18 @@ class VectorMaths {
         static Vector2i ceilToInt(Vector2f A);
         static Vector2f toFloat(Vector2i A);
 
+
+        static bool nearlyEqual(float a, float b);
         static bool nearlyEqual(Vector2f A, Vector2f B);
 
         static size_t hash(Vector2i A);
+
+        static float degreeToRad(float angle);
+        static float radToDegree(float angle);
+
+        static constexpr float pi = 3.14159265358979323846;
+        static constexpr float half_pi = 1.57079632679489661923;
+        static constexpr float double_pi = 2 * 3.14159265358979323846;
+
+        static constexpr float epsilon = 1e-3;        
 };

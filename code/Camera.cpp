@@ -43,7 +43,7 @@ void Camera::drawShape(Transform shapeTransform, Shape* shape, sf::Color colour,
 void Camera::drawRect(Transform rectTransform, Vector2f size, sf::Color colour, sf::Texture* sprite) {
     sf::RectangleShape rect(size * scale);
     rect.setOrigin(size * scale / 2.f);
-    rect.setRotation(FloatMaths::radToDegree(rectTransform.rot - transform.rot));
+    rect.setRotation(Maths::radToDegree(rectTransform.rot - transform.rot));
     rect.setFillColor(colour);
     if (sprite) {
         rect.setTexture(sprite);
@@ -53,8 +53,8 @@ void Camera::drawRect(Transform rectTransform, Vector2f size, sf::Color colour, 
 }
 void Camera::drawCirc(Transform circtTransform, float radius, sf::Color colour, sf::Texture* sprite) {
     sf::CircleShape circ(radius * scale);
-    circ.setOrigin(VectorMaths::one() * radius * scale);
-    circ.setRotation(FloatMaths::radToDegree(circtTransform.rot));
+    circ.setOrigin(Maths::one() * radius * scale);
+    circ.setRotation(Maths::radToDegree(circtTransform.rot));
     circ.setFillColor(colour);
     if (sprite) {
         circ.setTexture(sprite);

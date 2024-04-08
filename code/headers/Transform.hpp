@@ -2,7 +2,7 @@
 #include <SFML/System/Vector2.hpp>
 using sf::Vector2f;
 using sf::Vector2i;
-#include "VectorMaths.hpp"
+#include "Maths.hpp"
 
 class Transform {
     public:

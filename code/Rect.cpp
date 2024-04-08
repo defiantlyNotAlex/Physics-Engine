@@ -17,14 +17,14 @@ vector<Vector2f> Rect::getPoints() {
     return points;
 }
 const size_t Rect::getNormalVectors(Transform transform, vector<Vector2f>& out) {
-    out.push_back(VectorMaths::directionVector(transform.rot));
-    out.push_back(VectorMaths::directionVector(transform.rot + FloatMaths::half_pi));
+    out.push_back(Maths::directionVector(transform.rot));
+    out.push_back(Maths::directionVector(transform.rot + Maths::half_pi));
     return 2;
 }
 const float Rect::getMaxProjection(Transform transform, Vector2f normal) {
     float max;
     for (size_t i = 0; i < points.size(); i++) {
-        float d = VectorMaths::dotProd(normal, transform.convertLocaltoWorld(points[i]));
+        float d = Maths::dotProd(normal, transform.convertLocaltoWorld(points[i]));
         if (i == 0 || d > max) {
             max = d;
         }
@@ -34,7 +34,7 @@ const float Rect::getMaxProjection(Transform transform, Vector2f normal) {
 const float Rect::getMinProjection(Transform transform, Vector2f normal) {
     float min;
     for (size_t i = 0; i < points.size(); i++) {
-        float d = VectorMaths::dotProd(normal, transform.convertLocaltoWorld(points[i]));
+        float d = Maths::dotProd(normal, transform.convertLocaltoWorld(points[i]));
         if (i == 0 || d < min) {
             min = d;
         }
@@ -54,7 +54,7 @@ const bool Rect::checkPoint(Transform transform, Vector2f point) {
         auto curr = transform.convertLocaltoWorld(points[(i+1)%points.size()]);
         Vector2f side = curr - prev;
         Vector2f displacement = point - prev;
-        if (VectorMaths::crossProd(displacement, side) > 0) {
+        if (Maths::crossProd(displacement, side) > 0) {
             return false;
         }
     }
