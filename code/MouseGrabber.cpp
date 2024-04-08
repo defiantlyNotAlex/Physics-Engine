@@ -1,8 +1,12 @@
 #include "headers/MouseGrab.hpp"
 
+MouseGrabber::MouseGrabber(World* _world) {
+    world = _world;
+}
+
 void MouseGrabber::updatePos(Camera * camera) {
     auto mpos = sf::Mouse::getPosition(*camera->getWindow());
-    mousePos = camera->convertDisplaytoWorld(Vector2f(mpos));
+    mousePos = world->mainCamera->convertDisplaytoWorld(Vector2f(mpos));
 }
 void MouseGrabber::update(float dt) {
     if (grabbed) {
@@ -22,7 +26,7 @@ void MouseGrabber::update(float dt) {
 
 }
 void MouseGrabber::attemptGrab() {
-    grabbed = PhysicsObject::getObjectAtPoint(mousePos);
+    grabbed = world->getObjectAtPoint(mousePos);
     if (grabbed) {
         posGrabbed = grabbed->transform.convertWorldtoLocal(mousePos);
     }

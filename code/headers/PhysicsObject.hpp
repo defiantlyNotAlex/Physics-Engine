@@ -6,13 +6,12 @@ class PhysicsObject : public Node {
     private:
         void Collision(float dt, PhysicsObject* other);
     public:
-        static vector<PhysicsObject*>* objectList;
 
         static float gravity;
         static float drag;
         static float angularDrag;
 
-        PhysicsObject(Node* _parent, Transform _transform, Collider* _collider, float _mass = 1, float _ineria = 10);
+        PhysicsObject(Node* _parent, Transform _transform, Collider* _collider, float _mass = 1, float _inertia = 1000, bool lockPos = false, bool lockRot = false);
         ~PhysicsObject();
 
         Vector2f velocity;
@@ -20,6 +19,9 @@ class PhysicsObject : public Node {
 
         float mass;
         float inertia;
+
+        float inv_mass;
+        float inv_inertia;
 
         struct Material {
             float staticFriction;
@@ -35,7 +37,7 @@ class PhysicsObject : public Node {
 
         void update(float dt);
         /// @brief attempts to move and rotate
-        void move(float dt);
+        void step(float dt);
         void applyForce(float dt, Vector2f force, Vector2f forcePos);
         void applyTorque(float dt, float torque);
 
@@ -45,9 +47,4 @@ class PhysicsObject : public Node {
         void setRotation(float rot);
 
         Vector2f getLinearVel(Vector2f point);
-
-        PhysicsObject* const getOverlap();
-        vector<PhysicsObject*> const getAllOverlap();
-        bool const checkPoint(Vector2f point);
-        static PhysicsObject* getObjectAtPoint(Vector2f point);
 };

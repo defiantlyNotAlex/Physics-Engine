@@ -1,33 +1,36 @@
 #include "headers/PhysicsObject.hpp"
 
-vector<PhysicsObject*>* PhysicsObject::objectList = new vector<PhysicsObject*>;
-
 float PhysicsObject::gravity = 200;
 float PhysicsObject::drag = 0.001; 
 float PhysicsObject::angularDrag = 2;
 
 
-PhysicsObject::PhysicsObject(Node* _parent, Transform _transform, Collider* _collider, float _mass, float _inertia) : Node (_parent, _transform) {
-    objectList->push_back(this);
+PhysicsObject::PhysicsObject(Node* _parent, Transform _transform, Collider* _collider, float _mass, float _inertia, bool lockPos, bool lockRot) : Node (_parent, _transform) {
     collider = _collider;
     velocity = Maths::zero();
     angularVelocity = 0;
+
+    lockPosition = lockPos;
+    lockRotation = lockRot;
+
     mass = _mass;
     inertia = _inertia;
+    inv_mass = this->lockPosition ? 0 : 1.f / this->mass;
+    inv_inertia = this->lockRotation ? 0 : 1.f / this->inertia;
+
+
     material.elasticity = 0;
     material.dynamicFriction = 0.6;
     material.staticFriction = 0.3;
 }
 PhysicsObject::~PhysicsObject() {
     delete(collider);
-    objectList->erase(std::remove(objectList->begin(), objectList->end(), this), objectList->end());
 }
 Vector2f PhysicsObject::getPosition() {
     return transform.pos;
 }
 void PhysicsObject::setPosition(Vector2f pos) {
     if (lockPosition) return;
-    //velocity = (pos - transform.pos);
     transform.pos = pos;
     collider->setPosition(pos);
 }
@@ -43,12 +46,10 @@ Vector2f PhysicsObject::getLinearVel(Vector2f point) {
     Vector2f displacement = point - getPosition();
     return velocity + angularVelocity * Maths::rotate90_CW(displacement);
 }
-void PhysicsObject::update(float dt) {
-    applyForce(dt, Maths::down() * gravity * this->mass, transform.pos);
-    move(dt);
-}
 
-void PhysicsObject::move(float dt) {
+void PhysicsObject::step(float dt) {
+    applyForce(dt, Maths::down() * gravity * this->mass, transform.pos);
+
     if (lockPosition) velocity = Maths::zero();
     if (lockRotation) angularVelocity = 0;
 
@@ -69,10 +70,6 @@ void PhysicsObject::move(float dt) {
         transform.rot = rotateTo;
         collider->setRotation(rotateTo);
     }
-    vector<PhysicsObject*> others = getAllOverlap();
-    for (PhysicsObject* other : others) {
-        Collision(dt, other);
-    } 
 }
 void PhysicsObject::Collision(float dt, PhysicsObject* other) {
     CollisionManifold cm = collider->getCollision(other->collider);
@@ -93,10 +90,10 @@ void PhysicsObject::Collision(float dt, PhysicsObject* other) {
     const Vector2f raPerp = Vector2f(-ra.y, ra.x);
     const Vector2f rbPerp = Vector2f(-rb.y, rb.x);
 
-    const float m_this_inv = this->lockPosition ? 0 : 1.f / this->mass;
-    const float m_other_inv = other->lockPosition ? 0 : 1.f / other->mass;
-    const float I_this_inv = this->lockRotation ? 0 : 1.f / this->inertia;
-    const float I_other_inv = other->lockRotation ? 0 : 1.f / other->inertia;
+    const float m_this_inv = this->inv_mass;
+    const float m_other_inv = other->inv_mass;
+    const float I_this_inv = this->inv_inertia;
+    const float I_other_inv = other->inv_inertia;
 
     const float raPerpDotN = Maths::dotProd(raPerp, cm.normal);
     const float rbPerpDotN = Maths::dotProd(rbPerp, cm.normal);
@@ -138,7 +135,6 @@ void PhysicsObject::Collision(float dt, PhysicsObject* other) {
     }
     this->applyForce(1, frictionImpulse, contact);
     other->applyForce(1, -frictionImpulse, contact);
-
 }
 
 void PhysicsObject::applyForce(float dt, Vector2f force, Vector2f forcePos) {
@@ -149,39 +145,4 @@ void PhysicsObject::applyForce(float dt, Vector2f force, Vector2f forcePos) {
 }
 void PhysicsObject::applyTorque(float dt, float torque) {
     angularVelocity += torque * dt / inertia;
-}
-/// @brief finds if the PhysicsObject is colliding with anything
-/// @return the first object it finds returns nullptr if there are no collisions
-PhysicsObject* const PhysicsObject::getOverlap() {
-    for (PhysicsObject* other : *objectList) {
-        if (other != this && this->collider->checkCollision(other->collider)) {
-            return other;
-        }
-    }
-    return nullptr;
-}
-vector<PhysicsObject*> const PhysicsObject::getAllOverlap() {
-    vector<PhysicsObject*> returnArray;
-    for (PhysicsObject* other : *objectList) {
-        if (other != this && this->collider->checkCollision(other->collider)) {
-            returnArray.push_back(other);
-        }
-    }
-    return returnArray;
-}
-bool const PhysicsObject::checkPoint(Vector2f point) {
-    for (PhysicsObject* other : *objectList) {
-        if (other != this && other->collider->checkPoint(point)) {
-            return true;
-        }
-    }
-    return false;
-}
-PhysicsObject* PhysicsObject::getObjectAtPoint(Vector2f point) {
-    for (PhysicsObject* obj : *objectList) {
-        if (obj->collider->checkPoint(point)) {
-            return obj;
-        }
-    }
-    return nullptr;
 }

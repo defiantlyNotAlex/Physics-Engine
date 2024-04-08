@@ -6,6 +6,7 @@
 #include <SFML/Graphics.hpp>
 #include <SFML/Window/Mouse.hpp>
 #include <string>
+#include "headers/World.hpp"
 
 int main() {
     sf::Font font;
@@ -16,27 +17,19 @@ int main() {
     sf::Clock deltaClock;
     sf::RenderWindow window(sf::VideoMode(1200, 1000), "physics");   
 
-    Node* root = new Node(nullptr, Transform({0, 0}));
-    Camera* camera = (Camera*)root->addChild(new Camera(root, &window, Transform({0, 0}, 0), 1));
-    MouseGrabber* mg = (MouseGrabber*)root->addChild(new MouseGrabber());
+    World world;
+    world.root = new Node(nullptr, Transform({0, 0}));
+    world.mainCamera = (Camera*)world.root->addChild(new Camera(world.root, &window, Transform({0, 0}, 0), 1));
+    MouseGrabber* mg = new MouseGrabber(&world);
+    world.root->addChild(mg);
 
-    Collider* A = (Collider*)root->addChild(new Collider(root, Transform({0, 300}, 0), new Rect({1000, 40})));
-    Collider* B = (Collider*)root->addChild(new Collider(root, Transform({20, 20}, 0), new Rect({50, 50})));
-    Collider* C = (Collider*)root->addChild(new Collider(root, Transform({40, 40}, 0), new Rect({50, 50})));
-    //Collider* D = (Collider*)root->addChild(new Collider(root, Transform({20, -80}, 0), new Circle(50)));
-    Collider* E = (Collider*)root->addChild(new Collider(root, Transform({-50, -100}, 0), new Polygon({{-20, -20}, {20, -20}, {25, 0}, {20, 20}, {-20, 20}, {-25, 0}})));
-    //Collider* F = (Collider*)root->addChild(new Collider(root, Transform({80, -120}, 0), new Circle(20)));
+    PhysicsObject* A = new PhysicsObject(world.root, Transform({10, 10}), new Collider(world.root, Transform({10, 10}), new Circle(10)));
+    PhysicsObject* B = new PhysicsObject(world.root, Transform({10, 10}), new Collider(world.root, Transform({10, 10}), new Circle(10)));
+    world.root->addChild(A);
+    world.root->addChild(B);
+    world.newObject(A);
+    world.newObject(B);
 
-    PhysicsObject* P = (PhysicsObject*)root->addChild(new PhysicsObject(root, A->transform, A, 10, 333333));
-    PhysicsObject* Q = (PhysicsObject*)root->addChild(new PhysicsObject(root, B->transform, B, 1, 3333));
-    PhysicsObject* R = (PhysicsObject*)root->addChild(new PhysicsObject(root, C->transform, C, 1, 3333));
-    //PhysicsObject* S = (PhysicsObject*)root->addChild(new PhysicsObject(root, D->transform, D, 1, 3333));
-    PhysicsObject* T = (PhysicsObject*)root->addChild(new PhysicsObject(root, E->transform, E, 1, 3333));
-    //PhysicsObject* U = (PhysicsObject*)root->addChild(new PhysicsObject(root, F->transform, F, 1, 3333));
-
-
-    P->lockPosition = true;
-    //P->lockRotation = true;
 
     sf::Mouse mouse;
 
@@ -53,15 +46,15 @@ int main() {
 
 
         auto mpos = mouse.getPosition(window);
-        auto mouseWorldPos = camera->convertDisplaytoWorld(Vector2f(mpos));        
+        auto mouseWorldPos = world.mainCamera->convertDisplaytoWorld(Vector2f(mpos));        
         
         time += dt;
         frameCount++;
 
 
         
-        mg->updatePos(camera);
-        root->update(dt);
+        mg->updatePos(world.mainCamera);
+        world.root->update(dt);
 
         sf::Event event;
         while (window.pollEvent(event))
@@ -82,12 +75,8 @@ int main() {
         window.clear();
     
         window.draw(text);
-        camera->drawShape(A->transform, A->getShape());
-        camera->drawShape(B->transform, B->getShape());
-        camera->drawShape(C->transform, C->getShape());
-        //camera->drawShape(D->transform, D->getShape());
-        camera->drawShape(E->transform, E->getShape());
-        //camera->drawShape(F->transform, F->getShape());
+        world.mainCamera->drawShape(A->transform, A->collider->getShape());
+        world.mainCamera->drawShape(B->transform, B->collider->getShape());
         window.display(); 
         
               
