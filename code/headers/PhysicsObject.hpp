@@ -1,17 +1,17 @@
 #pragma once
 #include "Node.hpp"
 #include "Collider.hpp"
+#include "OptionalPair.hpp"
 
 class PhysicsObject : public Node {
     private:
-        void Collision(float dt, PhysicsObject* other);
-    public:
 
+    public:
         static float gravity;
         static float drag;
         static float angularDrag;
 
-        PhysicsObject(Node* _parent, Transform _transform, Collider* _collider, float _mass = 1, float _inertia = 1000, bool _isStatic = false);
+        PhysicsObject(Transform _transform, Collider* _collider, float _mass = 1, float _inertia = 1000, bool _isStatic = false);
         ~PhysicsObject();
 
         Vector2f velocity;
@@ -44,5 +44,42 @@ class PhysicsObject : public Node {
         float getRotation();
         void setRotation(float rot);
 
+        struct Force {
+            PhysicsObject* obj;
+            float dt;
+            Vector2f force;
+            Vector2f forceLocation;
+
+            void apply() {
+                obj->applyForce(dt, force, forceLocation);
+            }
+        };
+
+        struct CollisionPair {
+            public:
+                PhysicsObject* bodyA;
+                PhysicsObject* bodyB;
+                
+                Vector2f normal;
+                float depth;
+                OptionalPair<Vector2f> contacts;
+                OptionalPair<Vector2f> relativeVels;
+
+                CollisionPair& operator=(Collider::Collision cm) {
+                    normal = cm.normal;
+                    depth = cm.depth;
+                    contacts = cm.contacts;
+                    return *this;
+                };
+
+                bool exists;
+                operator bool() const {
+                    return exists;
+                }
+        };
+
         Vector2f getLinearVel(Vector2f point);
+        static CollisionPair getCollision(PhysicsObject* A, PhysicsObject* B);
+        static void solveImpulse(CollisionPair cm);
+        static void solvePositions(CollisionPair cp);
 };

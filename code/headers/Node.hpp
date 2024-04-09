@@ -5,8 +5,6 @@ using std::vector;
 
 class Node {
     public:
-        static Node* root;
-
         Transform transform;
         vector<Node*> children;
         

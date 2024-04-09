@@ -1,6 +1,6 @@
 #include "headers/MouseGrab.hpp"
 
-MouseGrabber::MouseGrabber(World* _world) {
+MouseGrabber::MouseGrabber(World* _world) : Node(nullptr, Transform()) {
     world = _world;
 }
 
@@ -12,9 +12,11 @@ void MouseGrabber::update(float dt) {
     if (grabbed) {
         Vector2f grab = grabbed->transform.convertLocaltoWorld(posGrabbed);
         grabbed->applyForce(dt, 2.f * (mousePos - grab), grab);
+        
     }
 
     if (sf::Mouse::isButtonPressed(sf::Mouse::Button::Left)) {
+        std::cout << "jell" << std::endl;
         if (!clickLastFrame) {
             attemptGrab();
         }

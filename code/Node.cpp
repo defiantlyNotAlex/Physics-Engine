@@ -1,7 +1,7 @@
 #include "headers/Node.hpp"
 
 Node::Node(Node* _parent, Transform _transform) {
-    parent = parent;
+    parent = _parent;
     transform = _transform;
 }
 Node::Node() {
@@ -25,6 +25,7 @@ void Node::propagateUpdate(float dt) {
 
 Node* Node::addChild(Node* child) {
     children.push_back(child);
+    child->parent = this;
     return child;
 }
 void Node::removeChild(Node* child) {

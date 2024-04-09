@@ -19,7 +19,7 @@ vector<Edge> Circle::getEdges(Transform transform, Vector2f normal) const {
     return {};
 }
 bool Circle::checkPoint(Transform transform, Vector2f point) const {
-    return Maths::magnitudeSqr(transform.pos - point) < radius * radius;
+    return Maths::magnitudeSqr(transform.pos - point) <= radius * radius;
 }
 AABB Circle::getBoundingBox(Transform transform) const {
     return AABB(transform.pos - Vector2f(radius, radius), transform.pos + Vector2f(radius, radius));

@@ -1,6 +1,6 @@
 #include "headers/World.hpp"
 World::World() {
-
+    root = new Node(nullptr, Transform());
 }
 
 void World::update(float dt) {
@@ -12,19 +12,27 @@ void World::physicsUpdate(float dt, size_t iterations) {
         for (PhysicsObject* obj : objectList) {
             obj->step(dt);
         }
-
-        vector<CollisionManifold> collisions;
+        
+        vector<PhysicsObject::CollisionPair> collisions;
         
         for (size_t i = 0; i < objectList.size(); i++) {
             for (size_t j = i + 1; j < objectList.size(); j++) {
-                if (objectList[i]->isStatic && objectList[j]->isStatic) continue;
+                PhysicsObject* bodyA = objectList[i];
+                PhysicsObject* bodyB = objectList[j];
+                if (bodyA->isStatic && bodyB->isStatic) continue;
                 
-                // get the collision
-
+                PhysicsObject::CollisionPair cp = PhysicsObject::getCollision(bodyA, bodyB);
+                if (cp) {
+                    collisions.push_back(cp);
+                }
             }
         }
+        return;
+        for (;;) {
+            // solve impulses
+        }
 
-        for (CollisionManifold cm : collisions) {
+        for (;;) {
             // solve collision
         }
     }
@@ -34,8 +42,9 @@ void World::delObject(PhysicsObject* obj) {
     objectList.erase(std::find(objectList.begin(), objectList.end(), obj), objectList.end());
     delete(obj);
 }
-void World::newObject(PhysicsObject* obj) {
+PhysicsObject* World::newObject(PhysicsObject* obj) {
     objectList.push_back(obj);
+    return obj;
 }
 
 /// @brief finds if the PhysicsObject is colliding with anything

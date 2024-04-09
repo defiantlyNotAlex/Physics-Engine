@@ -1,7 +1,7 @@
 #include "headers/Camera.hpp"
 #include <iostream>
 
-Camera::Camera(Node* _parent, sf::RenderWindow * _window, Transform _transform, float _scale = 1) : Node(_parent, _transform) {
+Camera::Camera(sf::RenderWindow * _window, Transform _transform, float _scale = 1) : Node(nullptr, _transform) {
     scale = _scale;
     window = _window;
 }

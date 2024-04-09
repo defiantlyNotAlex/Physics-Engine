@@ -12,7 +12,7 @@ class Camera : public Node {
 
         const sf::RenderWindow* getWindow();
     
-        Camera(Node* parent, sf::RenderWindow * window, Transform _transform, float _scale);
+        Camera(sf::RenderWindow * window, Transform _transform, float _scale);
         Vector2f convertWorldtoDisplay(Vector2f world);
         Vector2f convertDisplaytoWorld(Vector2f display);
 

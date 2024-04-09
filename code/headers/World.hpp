@@ -12,7 +12,7 @@ class World {
         Camera* mainCamera;
 
         void delObject(PhysicsObject*);
-        void newObject(PhysicsObject*);
+        PhysicsObject* newObject(PhysicsObject*);
 
         void update(float dt);
         void physicsUpdate(float dt, size_t iterations);

@@ -18,18 +18,15 @@ int main() {
     sf::RenderWindow window(sf::VideoMode(1200, 1000), "physics");   
 
     World world;
-    world.root = new Node(nullptr, Transform({0, 0}));
-    world.mainCamera = (Camera*)world.root->addChild(new Camera(world.root, &window, Transform({0, 0}, 0), 1));
+    world.mainCamera = (Camera*)world.root->addChild(new Camera(&window, Transform({0, 0}, 0), 1));
     MouseGrabber* mg = new MouseGrabber(&world);
     world.root->addChild(mg);
 
-    PhysicsObject* A = new PhysicsObject(world.root, Transform({10, 10}), new Collider(world.root, Transform({10, 10}), new Circle(10)));
-    PhysicsObject* B = new PhysicsObject(world.root, Transform({10, 10}), new Collider(world.root, Transform({10, 10}), new Circle(10)));
-    world.root->addChild(A);
-    world.root->addChild(B);
-    world.newObject(A);
-    world.newObject(B);
-
+    PhysicsObject* A = new PhysicsObject(Transform({10, 10}), new Collider(Transform({10, 10}), new Circle(10)));
+    PhysicsObject* B = new PhysicsObject(Transform({10, 40}), new Collider(Transform({10, 40}), new Circle(10)));
+    world.root->addChild(world.newObject(A));
+    world.root->addChild(world.newObject(B));
+    
 
     sf::Mouse mouse;
 
@@ -54,7 +51,10 @@ int main() {
 
         
         mg->updatePos(world.mainCamera);
-        world.root->update(dt);
+        
+        world.update(dt);
+        
+        world.physicsUpdate(dt, 5);
 
         sf::Event event;
         while (window.pollEvent(event))
