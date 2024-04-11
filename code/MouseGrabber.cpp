@@ -16,7 +16,6 @@ void MouseGrabber::update(float dt) {
     }
 
     if (sf::Mouse::isButtonPressed(sf::Mouse::Button::Left)) {
-        std::cout << "jell" << std::endl;
         if (!clickLastFrame) {
             attemptGrab();
         }

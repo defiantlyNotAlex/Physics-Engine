@@ -22,10 +22,12 @@ int main() {
     MouseGrabber* mg = new MouseGrabber(&world);
     world.root->addChild(mg);
 
-    PhysicsObject* A = new PhysicsObject(Transform({10, 10}), new Collider(Transform({10, 10}), new Circle(10)));
-    PhysicsObject* B = new PhysicsObject(Transform({10, 40}), new Collider(Transform({10, 40}), new Circle(10)));
+    PhysicsObject* Big = new PhysicsObject(Transform({0, 100}), new Collider(new Rect({1000, 100})), 1, 1, true);
+    PhysicsObject* A = new PhysicsObject(Transform({10, -100}), new Collider(new Rect({20, 20})));
+    PhysicsObject* B = new PhysicsObject(Transform({10, 40}), new Collider(new Circle(10)));
     world.root->addChild(world.newObject(A));
     world.root->addChild(world.newObject(B));
+    world.root->addChild(world.newObject(Big));
     
 
     sf::Mouse mouse;
@@ -71,12 +73,14 @@ int main() {
             time = 0;
         }
 
-        text.setString("mousePos: " + std::to_string(mouseWorldPos.x) + ", " + std::to_string(mouseWorldPos.y));
+        Vector2f display = A->velocity;
+        text.setString(std::to_string(display.x) + ", " + std::to_string(display.y));
         window.clear();
     
         window.draw(text);
         world.mainCamera->drawShape(A->transform, A->collider->getShape());
         world.mainCamera->drawShape(B->transform, B->collider->getShape());
+        world.mainCamera->drawShape(Big->transform, Big->collider->getShape());
         window.display(); 
         
               

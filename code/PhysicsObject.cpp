@@ -1,6 +1,6 @@
 #include "headers/PhysicsObject.hpp"
 
-float PhysicsObject::gravity = 200;
+float PhysicsObject::gravity = 100;
 float PhysicsObject::drag = 0.001; 
 float PhysicsObject::angularDrag = 2;
 
@@ -89,64 +89,68 @@ PhysicsObject::CollisionPair PhysicsObject::getCollision(PhysicsObject* A, Physi
         Vector2f rel_vel = B->getLinearVel(contact) - A->getLinearVel(contact);
         cp.relativeVels.push_back(rel_vel);
     }
-    
+
     return cp;
 }
-void PhysicsObject::solvePositions(CollisionPair cp) {
+void PhysicsObject::solvePositions(CollisionPair col) {
     // each is moved according to 1 - total_mass / individual_mass
     float mass_ratio_A;
     float mass_ratio_B;
-    if (cp.bodyB->isStatic) {
-        if (cp.bodyA->isStatic) return; // should never happen
+    if (col.bodyB->isStatic) {
+        if (col.bodyA->isStatic) return; // should never happen
         mass_ratio_A = 1.f;
         mass_ratio_B = 0.f;
-    } else if (cp.bodyA->isStatic) {
+    } else if (col.bodyA->isStatic) {
         mass_ratio_A = 0.f;
         mass_ratio_B = 1.f;
     } else {
-        float total_mass = cp.bodyB->mass + cp.bodyA->mass;
-        mass_ratio_A = 1.f - total_mass * cp.bodyA->inv_mass;
-        mass_ratio_B = 1.f - total_mass * cp.bodyB->inv_mass;
+        float total_mass = col.bodyB->mass + col.bodyA->mass;
+        mass_ratio_A = 1.f - total_mass * col.bodyA->inv_mass;
+        mass_ratio_B = 1.f - total_mass * col.bodyB->inv_mass;
     }
 
-    cp.bodyA->setPosition(cp.bodyA->getPosition() + cp.normal * cp.depth * mass_ratio_A);
-    cp.bodyB->setPosition(cp.bodyB->getPosition() + cp.normal * cp.depth * mass_ratio_B);
+    col.bodyA->setPosition(col.bodyA->getPosition() + col.normal * col.depth * mass_ratio_A);
+    col.bodyB->setPosition(col.bodyB->getPosition() + col.normal * col.depth * mass_ratio_B);
 }
 
-void PhysicsObject::solveImpulse(CollisionPair cm) {
-    for (size_t i = 0; i < cm.contacts.size(); i++) {
-        Vector2f contact = cm.contacts[i];
+void PhysicsObject::solveImpulse(CollisionPair col) {
+    // first is force, second is position
+    vector<std::pair<Vector2f, Vector2f>> impulses;
 
-        Vector2f relativeVelocity = cm.relativeVels[i];
+    for (size_t i = 0; i < col.contacts.size(); i++) {
+        Vector2f contact = col.contacts[i];
+        Vector2f relativeVelocity = col.relativeVels[i];
 
-        const Vector2f ra = contact - cm.bodyA->getPosition();
-        const Vector2f rb = contact - cm.bodyB->getPosition();
+        const Vector2f ra = contact - col.bodyA->getPosition();
+        const Vector2f rb = contact - col.bodyB->getPosition();
 
         const Vector2f raPerp = Vector2f(-ra.y, ra.x);
         const Vector2f rbPerp = Vector2f(-rb.y, rb.x);
 
-        const float m_A_inv = cm.bodyA->inv_mass;
-        const float m_B_inv = cm.bodyB->inv_mass;
-        const float I_A_inv = cm.bodyA->inv_inertia;
-        const float I_B_inv = cm.bodyB->inv_inertia;
+        const float m_A_inv = col.bodyA->inv_mass;
+        const float m_B_inv = col.bodyB->inv_mass;
+        const float I_A_inv = col.bodyA->inv_inertia;
+        const float I_B_inv = col.bodyB->inv_inertia;
 
-        const float raPerpDotN = Maths::dotProd(raPerp, cm.normal);
-        const float rbPerpDotN = Maths::dotProd(rbPerp, cm.normal);
+        const float raPerpDotN = Maths::dotProd(raPerp, col.normal);
+        const float rbPerpDotN = Maths::dotProd(rbPerp, col.normal);
 
         const float denominator = m_A_inv + m_B_inv + 
         (I_A_inv * raPerpDotN * raPerpDotN) + 
         (I_B_inv * rbPerpDotN * rbPerpDotN);
 
-        float restitution = cm.bodyA->material.elasticity * cm.bodyB->material.elasticity;
-        const float j = -(1 + restitution) * Maths::dotProd(relativeVelocity, cm.normal) / denominator;
-        Vector2f reactionImpulse = j * cm.normal;
+        float restitution = col.bodyA->material.elasticity * col.bodyB->material.elasticity;
+        const float j = -(1 + restitution) * Maths::dotProd(relativeVelocity, col.normal) / denominator;
+        Vector2f reactionImpulse = j * col.normal;
 
-        Vector2f tangent = relativeVelocity - Maths::dotProd(relativeVelocity, cm.normal) * cm.normal;
-        const float staticFrictionCoeff = (cm.bodyA->material.staticFriction + cm.bodyB->material.staticFriction)*0.5f;
-        const float dynamicFrictionCoeff = (cm.bodyA->material.dynamicFriction + cm.bodyB->material.dynamicFriction) * 0.5f;
+        impulses.push_back({reactionImpulse, contact});
+
+        Vector2f tangent = relativeVelocity - Maths::dotProd(relativeVelocity, col.normal) * col.normal;
+        const float staticFrictionCoeff = (col.bodyA->material.staticFriction + col.bodyB->material.staticFriction)*0.5f;
+        const float dynamicFrictionCoeff = (col.bodyA->material.dynamicFriction + col.bodyB->material.dynamicFriction) * 0.5f;
 
         if (Maths::nearlyEqual(tangent, Maths::zero())) {
-            return;
+            continue;
         } else {
             tangent = Maths::normalise(tangent);
         }
@@ -165,8 +169,13 @@ void PhysicsObject::solveImpulse(CollisionPair cm) {
         } else {
             frictionImpulse = -j * tangent * dynamicFrictionCoeff;
         }
-        cm.bodyA->applyForce(1, frictionImpulse, contact);
-        cm.bodyB->applyForce(1, -frictionImpulse, contact);
+        impulses.push_back({-frictionImpulse, contact});
+    }
+    // apply the impulses
+    for (auto impulse : impulses) {
+        std::cout << Maths::toString(impulse.first) << std::endl;
+        col.bodyA->applyForce(1, -impulse.first, impulse.second);
+        col.bodyB->applyForce(1, impulse.first, impulse.second);
     }
 }
 

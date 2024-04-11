@@ -5,6 +5,7 @@ Collider::Collider(Transform _transform, Shape* _shape) : Node(nullptr, _transfo
     shape = _shape;
     updateBounds();
 }
+Collider::Collider(Shape* _shape) : Collider(Transform(), _shape) {};
 Collider::~Collider() {}
 
 inline const Vector2f Collider::getPosition() {
@@ -128,7 +129,7 @@ OptionalPair<Vector2f> Collider::getContactPoint(Collider* other) {
 OptionalPair<Vector2f> Collider::CircleCircleHelper(Transform& transformA, float radiusA, Transform& transformB, float radiusB) {
     const Vector2f displacement = transformA.pos - transformB.pos;
     if (Maths::magnitude(displacement) > radiusA + radiusB) {
-        //return {};
+        return {};
     }
     const Vector2f d = Maths::normalise(displacement);
     return {(transformA.pos + d * radiusA + transformB.pos - d * radiusB) * 0.5f}; 
@@ -153,6 +154,7 @@ OptionalPair<Vector2f> Collider::CirclePolygonHelper(Transform& transformA, floa
     return {cp};
 }
 OptionalPair<Vector2f> Collider::PolygonPolygonHelper(Transform& transformA, vector<Vector2f> pointsA, Transform& transformB, vector<Vector2f> pointsB) {
+    std::cout << "this func" << std::endl;
     Vector2f contact1 = Maths::zero();
     Vector2f contact2 = Maths::zero();
     float minDistace = FLT_MAX;
@@ -196,6 +198,9 @@ OptionalPair<Vector2f> Collider::PolygonPolygonHelper(Transform& transformA, vec
             } 
         }
     }
+    std::cout << contactCount << std::endl;
+    OptionalPair<Vector2f> a = OptionalPair({contact1, contact2}); 
+    std::cout << a.count << " " << Maths::toString(a.data[0]) << " " << Maths::toString(a.data[1]) << std::endl;
     if (contactCount == 0) return {};
     if (contactCount == 1) return {contact1};
     return {contact1, contact2};

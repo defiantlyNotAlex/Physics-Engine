@@ -44,17 +44,6 @@ class PhysicsObject : public Node {
         float getRotation();
         void setRotation(float rot);
 
-        struct Force {
-            PhysicsObject* obj;
-            float dt;
-            Vector2f force;
-            Vector2f forceLocation;
-
-            void apply() {
-                obj->applyForce(dt, force, forceLocation);
-            }
-        };
-
         struct CollisionPair {
             public:
                 PhysicsObject* bodyA;
@@ -69,6 +58,7 @@ class PhysicsObject : public Node {
                     normal = cm.normal;
                     depth = cm.depth;
                     contacts = cm.contacts;
+                    exists = cm.exists;
                     return *this;
                 };
 

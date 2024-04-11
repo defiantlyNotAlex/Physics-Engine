@@ -20,6 +20,7 @@ class Collider : public Node {
         static OptionalPair<Vector2f> PolygonPolygonHelper(Transform& transformA, vector<Vector2f> pointsA, Transform& transformB, vector<Vector2f> pointsB);
     public:
         Collider(Transform _transform, Shape * _shape);
+        Collider(Shape* _shape);
         ~Collider();
 
         inline const Vector2f getPosition();

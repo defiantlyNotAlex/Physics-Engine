@@ -12,7 +12,7 @@ void World::physicsUpdate(float dt, size_t iterations) {
         for (PhysicsObject* obj : objectList) {
             obj->step(dt);
         }
-        
+
         vector<PhysicsObject::CollisionPair> collisions;
         
         for (size_t i = 0; i < objectList.size(); i++) {
@@ -21,19 +21,17 @@ void World::physicsUpdate(float dt, size_t iterations) {
                 PhysicsObject* bodyB = objectList[j];
                 if (bodyA->isStatic && bodyB->isStatic) continue;
                 
-                PhysicsObject::CollisionPair cp = PhysicsObject::getCollision(bodyA, bodyB);
-                if (cp) {
-                    collisions.push_back(cp);
+                PhysicsObject::CollisionPair col = PhysicsObject::getCollision(bodyA, bodyB);
+                if (col) {
+                    collisions.push_back(col);
                 }
             }
         }
-        return;
-        for (;;) {
-            // solve impulses
+        for (auto col : collisions) {
+            PhysicsObject::solveImpulse(col);
         }
-
-        for (;;) {
-            // solve collision
+        for (auto col : collisions) {
+            PhysicsObject::solvePositions(col);
         }
     }
 }

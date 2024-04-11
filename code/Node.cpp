@@ -31,3 +31,17 @@ Node* Node::addChild(Node* child) {
 void Node::removeChild(Node* child) {
     children.erase(std::remove(children.begin(), children.end(), child), children.end());
 }
+
+/// @brief finds the first instance of a specific type and returns it
+/// @tparam T must be a class dirived from Node
+/// @return returns the reference to the child it has found or nullptr if none are found
+template <class T>
+T* Node::getChild() {
+    for (Node* child : children) {
+        T* return_val = dynamic_cast<T*>(child);
+        if (return_val != nullptr) {
+            return return_val;
+        }
+    }
+    return nullptr;
+}
