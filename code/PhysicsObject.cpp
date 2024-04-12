@@ -173,7 +173,6 @@ void PhysicsObject::solveImpulse(CollisionPair col) {
     }
     // apply the impulses
     for (auto impulse : impulses) {
-        std::cout << Maths::toString(impulse.first) << std::endl;
         col.bodyA->applyForce(1, -impulse.first, impulse.second);
         col.bodyB->applyForce(1, impulse.first, impulse.second);
     }

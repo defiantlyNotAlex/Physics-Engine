@@ -54,7 +54,6 @@ class Maths {
         static Vector2i ceilToInt(Vector2f A);
         static Vector2f toFloat(Vector2i A);
 
-
         static bool nearlyEqual(float a, float b);
         static bool nearlyEqual(Vector2f A, Vector2f B);
 

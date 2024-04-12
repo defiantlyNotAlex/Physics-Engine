@@ -11,7 +11,7 @@ class PhysicsObject : public Node {
         static float drag;
         static float angularDrag;
 
-        PhysicsObject(Transform _transform, Collider* _collider, float _mass = 1, float _inertia = 1000, bool _isStatic = false);
+        PhysicsObject(Transform _transform, Collider* _collider, float _mass = 1, float _inertia = 333, bool _isStatic = false);
         ~PhysicsObject();
 
         Vector2f velocity;

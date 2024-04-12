@@ -32,7 +32,10 @@ float Maths::crossProd(Vector2f A, Vector2f B) {
     return A.x * B.y - A.y * B.x;
 }
 Vector3f Maths::crossProd(Vector3f A, Vector3f B) {
-    return Vector3f (A.y * B.z - A.z * B.y, A.z * B.x - A.x * B.z, A.x * B.y - A.y * B.x);
+    return Vector3f 
+    (   A.y * B.z - A.z * B.y, 
+        A.z * B.x - A.x * B.z, 
+        A.x * B.y - A.y * B.x   );
 }
 Vector3f Maths::convertTo3D(Vector2f A) {
     return Vector3f(A.x, A.y, 0);

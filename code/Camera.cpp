@@ -25,19 +25,21 @@ Vector2f Camera::convertDisplaytoWorld(Vector2f display) {
     return transform.convertLocaltoWorld(local);
 }
 void Camera::drawShape(Transform shapeTransform, Shape* shape, sf::Color colour, sf::Texture* sprite) {
-    switch (shape->getType())
-    {
-    case Shape::Type::Circle:
-        drawCirc(shapeTransform, ((Circle*)shape)->getRadius(), colour, sprite);
-        break;
-    case Shape::Type::Rect:
-        drawRect(shapeTransform, ((Rect*)shape)->getSize(), colour, sprite);
-        break;
-    case Shape::Type::Polygon:
-        drawPolygon(shapeTransform, ((Polygon*)shape)->getPoints(), colour, sprite);
-        break;
-    default:
-        break;
+    Circle* circ = dynamic_cast<Circle*>(shape);
+    Rect* rect = dynamic_cast<Rect*>(shape);
+    Polygon* poly = dynamic_cast<Polygon*>(shape);
+
+    if (circ) {
+        drawCirc(shapeTransform, circ->getRadius(), colour, sprite);
+        return;
+    }
+    if (rect) {
+        drawRect(shapeTransform, rect->getSize(), colour, sprite);
+        return;
+    }
+    if (poly) {
+        drawPolygon(shapeTransform, poly->getPoints(), colour, sprite);
+        return;
     }
 }
 void Camera::drawRect(Transform rectTransform, Vector2f size, sf::Color colour, sf::Texture* sprite) {
