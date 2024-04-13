@@ -23,7 +23,7 @@ int main() {
     world.root->addChild(mg);
 
     PhysicsObject* Big = new PhysicsObject(Transform({0, 100}), new Collider(new Rect({1000, 100})), 1, 1, true);
-    PhysicsObject* A = new PhysicsObject(Transform({10, -100}), new Collider(new Rect({20, 20})), 1, 100);
+    PhysicsObject* A = new PhysicsObject(Transform({10, -100}), new Collider(new Circle(10)), 1, 100);
     PhysicsObject* B = new PhysicsObject(Transform({10, -40}), new Collider(new Circle(10)));
     world.root->addChild(world.newObject(A));
     world.root->addChild(world.newObject(B));

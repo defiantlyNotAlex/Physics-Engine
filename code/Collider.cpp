@@ -114,16 +114,20 @@ OptionalPair<Vector2f> Collider::getContactPoint(Collider* other) {
     Circle* A_circ = dynamic_cast<Circle*>(this->getShape());
     Circle* B_circ = dynamic_cast<Circle*>(other->getShape());
     if (A_circ != nullptr && B_circ != nullptr) {
+        std::cout << "0" << std::endl;
         return CircleCircleHelper(this->transform, A_circ->getRadius(), other->transform, B_circ->getRadius());
     }
     Polygon* A_poly = dynamic_cast<Polygon*>(this->getShape());
     Polygon* B_poly = dynamic_cast<Polygon*>(other->getShape());
     if (A_circ != nullptr) {
+        std::cout << "1" << std::endl;
         return CirclePolygonHelper(this->transform, A_circ->getRadius(), other->transform, B_poly->getPoints());
     }
     if (B_circ != nullptr) {
+        std::cout << "2" << std::endl;
         return CirclePolygonHelper(other->transform, B_circ->getRadius(), this->transform, A_poly->getPoints());
     }
+    std::cout << "3" << std::endl;
     return PolygonPolygonHelper(this->transform, A_poly->getPoints(), other->transform, B_poly->getPoints());
 }
 

@@ -2,7 +2,7 @@
 
 float PhysicsObject::gravity = 100;
 float PhysicsObject::drag = 0.001; 
-float PhysicsObject::angularDrag = 2;
+float PhysicsObject::angularDrag = 10;
 
 
 PhysicsObject::PhysicsObject(Transform _transform, Collider* _collider, float _mass, float _inertia, bool _isStatic) : Node (nullptr, _transform) {
@@ -59,7 +59,7 @@ void PhysicsObject::step(float dt) {
     }
     
     applyForce(dt, -velocity * Maths::magnitude(velocity) * drag, this->getPosition());
-    applyTorque(dt, -angularDrag * angularVelocity * angularVelocity);
+    applyTorque(dt, -angularDrag * angularVelocity * std::abs(angularVelocity));
 
     auto pos = transform.pos;
     auto rot = transform.rot;
@@ -105,12 +105,12 @@ void PhysicsObject::solvePositions(CollisionPair col) {
         mass_ratio_B = 1.f;
     } else {
         float total_mass = col.bodyB->mass + col.bodyA->mass;
-        mass_ratio_A = 1.f - total_mass * col.bodyA->inv_mass;
-        mass_ratio_B = 1.f - total_mass * col.bodyB->inv_mass;
+        mass_ratio_A = 1.f - col.bodyA->mass / total_mass;
+        mass_ratio_B = 1.f - col.bodyB->mass / total_mass;
     }
 
     col.bodyA->setPosition(col.bodyA->getPosition() + col.normal * col.depth * mass_ratio_A);
-    col.bodyB->setPosition(col.bodyB->getPosition() + col.normal * col.depth * mass_ratio_B);
+    col.bodyB->setPosition(col.bodyB->getPosition() - col.normal * col.depth * mass_ratio_B);
 }
 
 void PhysicsObject::solveImpulse(CollisionPair col) {

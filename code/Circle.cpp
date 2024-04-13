@@ -23,9 +23,18 @@ vector<Vector2f> Circle::getFeatures(Transform transform) const {
     return {transform.pos};
 }
 void Circle::getNormalVectors(Transform transform, const vector<Vector2f>& otherFeatures, vector<Vector2f>& out) const {
-    for (Vector2f v : otherFeatures) {
-        out.push_back(Maths::normalise(transform.pos - v));
+    float minDist;
+    Vector2f min;
+    for (size_t i = 0; i < otherFeatures.size(); i++) {
+        Vector2f displacement = transform.pos - otherFeatures[i];
+        float d = Maths::magnitudeSqr(displacement);
+        if (i == 0 || d < minDist) {
+            min = displacement;
+            minDist = d;
+        }
+        
     }
+    out.push_back(Maths::normalise(min));
 }
 bool Circle::checkPoint(Transform transform, Vector2f point) const {
     return Maths::magnitudeSqr(transform.pos - point) <= radius * radius;
