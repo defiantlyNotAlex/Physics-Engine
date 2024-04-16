@@ -1,5 +1,6 @@
 #include "headers/Camera.hpp"
 #include <iostream>
+#define DEBUG
 
 Camera::Camera(sf::RenderWindow * _window, Transform _transform, float _scale = 1) : Node(nullptr, _transform) {
     scale = _scale;
@@ -52,17 +53,36 @@ void Camera::drawRect(Transform rectTransform, Vector2f size, sf::Color colour, 
     }
     rect.setPosition(convertWorldtoDisplay(rectTransform.pos));
     window->draw(rect);
+
+    #ifdef DEBUG
+    sf::Vertex line[] = {
+        sf::Vertex(convertWorldtoDisplay(rectTransform.pos)), 
+        sf::Vertex(convertWorldtoDisplay(rectTransform.pos + Maths::directionVector(rectTransform.rot) * (size.x / 2.f)))
+    };
+    line->color = sf::Color::Black;
+    window->draw(line, 2, sf::Lines);
+    #endif
 }
-void Camera::drawCirc(Transform circtTransform, float radius, sf::Color colour, sf::Texture* sprite) {
+void Camera::drawCirc(Transform circTransform, float radius, sf::Color colour, sf::Texture* sprite) {
     sf::CircleShape circ(radius * scale);
+
     circ.setOrigin(Maths::one() * radius * scale);
-    circ.setRotation(Maths::radToDegree(circtTransform.rot));
+    circ.setRotation(Maths::radToDegree(circTransform.rot));
     circ.setFillColor(colour);
     if (sprite) {
         circ.setTexture(sprite);
     }
-    circ.setPosition(convertWorldtoDisplay(circtTransform.pos));
+    circ.setPosition(convertWorldtoDisplay(circTransform.pos));
     window->draw(circ);
+
+    #ifdef DEBUG
+    sf::Vertex line[] = {
+        sf::Vertex(convertWorldtoDisplay(circTransform.pos)), 
+        sf::Vertex(convertWorldtoDisplay(circTransform.pos + Maths::directionVector(circTransform.rot) * radius))
+    };
+    line->color = sf::Color::Black;
+    window->draw(line, 2, sf::Lines);
+    #endif
 }
 void Camera::drawPolygon(Transform polygonTransform, vector<Vector2f> points, sf::Color colour, sf::Texture* sprite) {
     sf::ConvexShape polygon;
@@ -75,4 +95,13 @@ void Camera::drawPolygon(Transform polygonTransform, vector<Vector2f> points, sf
         polygon.setTexture(sprite);
     }
     window->draw(polygon);
+
+    #ifdef DEBUG
+    sf::Vertex line[] = {
+        sf::Vertex(convertWorldtoDisplay(polygonTransform.pos)), 
+        sf::Vertex(convertWorldtoDisplay(polygonTransform.convertLocaltoWorld(points[0])))
+    };
+    line->color = sf::Color::Black;
+    window->draw(line, 2, sf::Lines);
+    #endif
 }

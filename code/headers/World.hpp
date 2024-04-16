@@ -5,8 +5,9 @@
 
 class World {
     private:
-        vector<PhysicsObject*> objectList; 
+        //vector<PhysicsObject*> objectList; 
     public:
+        vector<PhysicsObject*> objectList; 
         World();
         Node* root;
         Camera* mainCamera;

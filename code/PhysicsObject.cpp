@@ -23,7 +23,7 @@ PhysicsObject::PhysicsObject(Transform _transform, Collider* _collider, float _m
 
     material.elasticity = 0;
     material.dynamicFriction = 0.6;
-    material.staticFriction = 0.3;
+    material.staticFriction = 0.4;
 }
 PhysicsObject::~PhysicsObject() {
     delete(collider);
@@ -45,6 +45,7 @@ void PhysicsObject::setRotation(float rot) {
     collider->setRotation(rot);
 }
 Vector2f PhysicsObject::getLinearVel(Vector2f point) {
+    if (isStatic) return Maths::zero();
     Vector2f displacement = point - getPosition();
     return velocity + angularVelocity * Maths::rotate90_CW(displacement);
 }
@@ -59,7 +60,7 @@ void PhysicsObject::step(float dt) {
     }
     
     applyForce(dt, -velocity * Maths::magnitude(velocity) * drag, this->getPosition());
-    applyTorque(dt, -angularDrag * angularVelocity * std::abs(angularVelocity));
+    applyTorque(dt, -angularDrag * angularVelocity);
 
     auto pos = transform.pos;
     auto rot = transform.rot;
@@ -98,15 +99,15 @@ void PhysicsObject::solvePositions(CollisionPair col) {
     float mass_ratio_B;
     if (col.bodyB->isStatic) {
         if (col.bodyA->isStatic) return; // should never happen
-        mass_ratio_A = 1.f;
+        mass_ratio_A = 1;
         mass_ratio_B = 0.f;
     } else if (col.bodyA->isStatic) {
         mass_ratio_A = 0.f;
-        mass_ratio_B = 1.f;
+        mass_ratio_B = 1;
     } else {
         float total_mass = col.bodyB->mass + col.bodyA->mass;
-        mass_ratio_A = 1.f - col.bodyA->mass / total_mass;
-        mass_ratio_B = 1.f - col.bodyB->mass / total_mass;
+        mass_ratio_A = 1 - col.bodyA->mass / total_mass;
+        mass_ratio_B = 1 - col.bodyB->mass / total_mass;
     }
 
     col.bodyA->setPosition(col.bodyA->getPosition() + col.normal * col.depth * mass_ratio_A);
@@ -173,8 +174,8 @@ void PhysicsObject::solveImpulse(CollisionPair col) {
     }
     // apply the impulses
     for (auto impulse : impulses) {
-        col.bodyA->applyForce(1, -impulse.first, impulse.second);
-        col.bodyB->applyForce(1, impulse.first, impulse.second);
+        col.bodyA->applyForce(1, -impulse.first/2.f, impulse.second);
+        col.bodyB->applyForce(1, impulse.first/2.f, impulse.second);
     }
 }
 
