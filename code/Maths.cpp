@@ -17,6 +17,9 @@ float Maths::magnitudeSqr(Vector2f A) {
     return A.x * A.x + A.y * A.y;
 }
 Vector2f Maths::normalise(Vector2f A) {
+    if (A == Vector2f(0.f, 0.f)) {
+        return A;
+    }
     return A * (1.f/magnitude(A));
 }
 Vector2f Maths::componentProd(Vector2f A, Vector2f B) {

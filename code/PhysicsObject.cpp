@@ -115,8 +115,15 @@ void PhysicsObject::solvePositions(CollisionPair col) {
 }
 
 void PhysicsObject::solveImpulse(CollisionPair col) {
-    // first is force, second is position
-    vector<std::pair<Vector2f, Vector2f>> impulses;
+    struct impulse {
+        Vector2f force;
+        Vector2f location;
+        impulse(Vector2f f, Vector2f l) {
+            force = f;
+            location = l;
+        }
+    };
+    vector<impulse> impulses;
 
     for (size_t i = 0; i < col.contacts.size(); i++) {
         Vector2f contact = col.contacts[i];
@@ -144,12 +151,13 @@ void PhysicsObject::solveImpulse(CollisionPair col) {
         const float j = -(1 + restitution) * Maths::dotProd(relativeVelocity, col.normal) / denominator;
         Vector2f reactionImpulse = j * col.normal;
 
-        impulses.push_back({reactionImpulse, contact});
+        impulses.push_back(impulse(reactionImpulse, contact));
 
         Vector2f tangent = relativeVelocity - Maths::dotProd(relativeVelocity, col.normal) * col.normal;
         const float staticFrictionCoeff = (col.bodyA->material.staticFriction + col.bodyB->material.staticFriction)*0.5f;
         const float dynamicFrictionCoeff = (col.bodyA->material.dynamicFriction + col.bodyB->material.dynamicFriction) * 0.5f;
-
+        
+        
         if (Maths::nearlyEqual(tangent, Maths::zero())) {
             continue;
         } else {
@@ -170,12 +178,12 @@ void PhysicsObject::solveImpulse(CollisionPair col) {
         } else {
             frictionImpulse = -j * tangent * dynamicFrictionCoeff;
         }
-        impulses.push_back({-frictionImpulse, contact});
+        impulses.push_back(impulse(-frictionImpulse, contact));
     }
     // apply the impulses
     for (auto impulse : impulses) {
-        col.bodyA->applyForce(1, -impulse.first/2.f, impulse.second);
-        col.bodyB->applyForce(1, impulse.first/2.f, impulse.second);
+        col.bodyA->applyForce(1, -impulse.force / 2.f, impulse.location);
+        col.bodyB->applyForce(1, impulse.force / 2.f, impulse.location);
     }
 }
 
