@@ -9,12 +9,14 @@ float Circle::getRadius() const {
 size_t Circle::getNormalVectors(Transform transform, vector<Vector2f>& out) const {
     return 0;
 }
+/*
 float Circle::getMaxProjection(Transform transform, Vector2f normal) const {
     return Maths::dotProd(transform.pos, normal) + radius;
 }
 float Circle::getMinProjection(Transform transform, Vector2f normal) const {
     return Maths::dotProd(transform.pos, normal) - radius;
 }
+*/
 std::array<float, 2> Circle::getProjection(Transform transform, Vector2f normal) const {
     float proj = Maths::dotProd(transform.pos, normal);
     return {proj - radius, proj + radius};

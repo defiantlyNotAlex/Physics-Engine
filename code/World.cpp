@@ -21,9 +21,9 @@ void World::physicsUpdate(float dt, size_t iterations) {
                 PhysicsObject* bodyB = objectList[j];
                 if (bodyA->isStatic && bodyB->isStatic) continue;
                 
-                PhysicsObject::CollisionPair col = PhysicsObject::getCollision(bodyA, bodyB);
+                auto col = PhysicsObject::getCollision(bodyA, bodyB);
                 if (col) {
-                    collisions.push_back(col);
+                    collisions.push_back(*col);
                 }
             }
         }

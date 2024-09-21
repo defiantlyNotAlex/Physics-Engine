@@ -1,7 +1,6 @@
 #pragma once
 #include "Node.hpp"
 #include "Collider.hpp"
-#include "OptionalPair.hpp"
 
 class PhysicsObject : public Node {
     private:
@@ -51,25 +50,19 @@ class PhysicsObject : public Node {
                 
                 Vector2f normal;
                 float depth;
-                OptionalPair<Vector2f> contacts;
-                OptionalPair<Vector2f> relativeVels;
+                vector<Vector2f> contacts;
+                vector<Vector2f> relativeVels;
 
                 CollisionPair& operator=(Collider::Collision cm) {
                     normal = cm.normal;
                     depth = cm.depth;
                     contacts = cm.contacts;
-                    exists = cm.exists;
                     return *this;
                 };
-
-                bool exists;
-                operator bool() const {
-                    return exists;
-                }
         };
 
         Vector2f getLinearVel(Vector2f point);
-        static CollisionPair getCollision(PhysicsObject* A, PhysicsObject* B);
+        static optional<CollisionPair> getCollision(PhysicsObject* A, PhysicsObject* B);
         static void solveImpulse(CollisionPair cm);
         static void solvePositions(CollisionPair cp);
 };

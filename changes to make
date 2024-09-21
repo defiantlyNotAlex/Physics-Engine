@@ -1,0 +1,7 @@
+- try to improve the polygon-polygon contact points
+- try to improve stability
+- set up profiling
+- try to make more efficient
+- set up sprite/asset manager
+- improve camera to handle sprites
+- replace all raw pointers with smart pointers

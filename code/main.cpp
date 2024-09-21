@@ -33,7 +33,7 @@ int main() {
 
     for (size_t i = 0; i < 5; i++) {
         for (size_t j = 0; j < 5; j++) {
-            world.root->addChild(world.newObject(new PhysicsObject(Transform({(float)i*20, -(float)j*20}), new Collider(new Circle(10)), 1, 16)));
+            world.root->addChild(world.newObject(new PhysicsObject(Transform({(float)i*20, -(float)j*20}), new Collider(new Rect({10, 10})), 1, 16)));
         }
     }
     
@@ -57,14 +57,12 @@ int main() {
         
         time += dt;
         frameCount++;
-
-
         
         mg->updatePos(world.mainCamera);
         
         world.update(dt);
         
-        world.physicsUpdate(dt, 4);
+        world.physicsUpdate(dt, 1);
 
         sf::Event event;
         while (window.pollEvent(event))
@@ -81,8 +79,8 @@ int main() {
             time = 0;
         }
         
-        //Vector2f display = B->velocity;
-        //text.setString(std::to_string(display.x) + ", " + std::to_string(display.y) + "Rotation: " + std::to_string(B->angularVelocity));
+        Vector2f display = world.objectList[0]->velocity;
+        text.setString(std::to_string(display.x) + ", " + std::to_string(display.y) + "Rotation: " + std::to_string(B->angularVelocity));
         window.clear();
     
         window.draw(text);

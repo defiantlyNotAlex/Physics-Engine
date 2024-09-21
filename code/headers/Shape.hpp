@@ -6,20 +6,25 @@
 #include <vector>
 using std::vector;
 #include <iostream>
-
+/// @brief Collider Shape: stores the untransformed information about the shape
 class Shape {
-    public:
-        
+    public:  
         Shape();
 
+        /// @brief Gets the minimal and maximal values for the dot product between the normal and all of the points on the boundry of the shape
+        /// @returns {min, max} 
         virtual std::array<float, 2> getProjection(Transform transform, Vector2f normal) const = 0;
+        /// @brief returns the vertices and the centre for circles
         virtual vector<Vector2f> getFeatures(Transform transform) const = 0;
+        /// @brief Gers all of the normal vectors to test for the SAT and appends them to the list provided
         virtual void getNormalVectors(Transform transform, const vector<Vector2f>& otherFeatures, vector<Vector2f>& out) const = 0;
 
-        virtual float getMaxProjection(Transform transform, Vector2f normal) const = 0;
-        virtual float getMinProjection(Transform transform, Vector2f normal) const = 0;
+        //virtual float getMaxProjection(Transform transform, Vector2f normal) const = 0;
+        //virtual float getMinProjection(Transform transform, Vector2f normal) const = 0;
 
+        /// @brief Checks if a point is inside the shape
         virtual bool checkPoint(Transform transform, Vector2f point) const = 0;
+        /// @brief Gets the axis aligned bounding box
         virtual AABB getBoundingBox(Transform transform) const = 0;
 };
 
@@ -37,8 +42,8 @@ class Circle : public Shape {
 
         size_t getNormalVectors(Transform transform, vector<Vector2f>& out) const;
         
-        float getMaxProjection(Transform transform, Vector2f normal) const;
-        float getMinProjection(Transform transform, Vector2f normal) const;
+        //float getMaxProjection(Transform transform, Vector2f normal) const;
+        //float getMinProjection(Transform transform, Vector2f normal) const;
 
         bool checkPoint(Transform transform, Vector2f point) const;
         AABB getBoundingBox(Transform transform) const;
@@ -58,8 +63,8 @@ class Polygon : public Shape {
         void getNormalVectors(Transform transform, const vector<Vector2f>& otherFeatures, vector<Vector2f>& out) const;
 
         size_t getNormalVectors(Transform transform, vector<Vector2f>& out) const;
-        float getMaxProjection(Transform transform, Vector2f normal) const;
-        float getMinProjection(Transform transform, Vector2f normal) const;
+        //float getMaxProjection(Transform transform, Vector2f normal) const;
+        //float getMinProjection(Transform transform, Vector2f normal) const;
 
         bool checkPoint(Transform transform, Vector2f point) const;
         AABB getBoundingBox(Transform transform) const;

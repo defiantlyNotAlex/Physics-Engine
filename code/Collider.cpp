@@ -42,25 +42,17 @@ bool Collider::checkCollision(Collider* other) {
     this->shape->getNormalVectors(this->transform, other->shape->getFeatures(other->transform), normalVectors);
     other->shape->getNormalVectors(other->transform, this->shape->getFeatures(this->transform), normalVectors);
 
-    // replace get min/ max with a singular std::array<Vector2f, 2> getProjection
     for (Vector2f normal : normalVectors) {
-        float thisMin = this->shape->getMinProjection(this->transform, normal);
-        float thisMax = this->shape->getMaxProjection(this->transform, normal);
-
-        float otherMin = other->shape->getMinProjection(other->transform, normal);
-        float otherMax = other->shape->getMaxProjection(other->transform, normal);
-
+        std::array<float, 2> thisExtreama = this->shape->getProjection(this->transform, normal);
+        std::array<float, 2> otherExtreama = other->shape->getProjection(other->transform, normal);
         
-        if (!(thisMin < otherMax && thisMax > otherMin)) return false;
+        if (!(thisExtreama[0] < otherExtreama[1] && thisExtreama[1] > otherExtreama[0])) return false;
     }
     return true;
 }
-// get rid of boolean flag and make return std::optional<Collider::Collision>
-Collider::Collision Collider::getCollision(Collider* other) {
+optional<Collider::Collision> Collider::getCollision(Collider* other) {
     Collision res;
-    res.exists = false;
-
-    if (!boundingBox.checkOverlap(other->boundingBox)) return res;
+    if (!boundingBox.checkOverlap(other->boundingBox)) return {};
 
     vector<Vector2f> normalVectors;
 
@@ -83,10 +75,9 @@ Collider::Collision Collider::getCollision(Collider* other) {
             }
         }
 
-        if (!(thisExtreama[0] < otherExtreama[1] && thisExtreama[1] > otherExtreama[0])) return res;
+        if (!(thisExtreama[0] < otherExtreama[1] && thisExtreama[1] > otherExtreama[0])) return {};
     }
     res.contacts = getContactPoint(other);
-    res.exists = true;
     return res;
 }
 
@@ -108,7 +99,7 @@ float Collider::pointSegmentDistace(Vector2f P, Vector2f A, Vector2f B, Vector2f
     return Maths::magnitudeSqr(P - contactPoint);
 }
 
-OptionalPair<Vector2f> Collider::getContactPoint(Collider* other) {
+vector<Vector2f> Collider::getContactPoint(Collider* other) {
     Circle* A_circ = dynamic_cast<Circle*>(this->getShape());
     Circle* B_circ = dynamic_cast<Circle*>(other->getShape());
     if (A_circ != nullptr && B_circ != nullptr) {
@@ -125,7 +116,7 @@ OptionalPair<Vector2f> Collider::getContactPoint(Collider* other) {
     return PolygonPolygonHelper(this->transform, A_poly->getPoints(), other->transform, B_poly->getPoints());
 }
 
-OptionalPair<Vector2f> Collider::CircleCircleHelper(Transform& transformA, float radiusA, Transform& transformB, float radiusB) {
+vector<Vector2f> Collider::CircleCircleHelper(Transform& transformA, float radiusA, Transform& transformB, float radiusB) {
     const Vector2f displacement = transformA.pos - transformB.pos;
     if (Maths::magnitude(displacement) > radiusA + radiusB) {
         return {};
@@ -133,7 +124,7 @@ OptionalPair<Vector2f> Collider::CircleCircleHelper(Transform& transformA, float
     const Vector2f d = Maths::normalise(displacement);
     return {(transformA.pos + d * radiusA + transformB.pos - d * radiusB) * 0.5f}; 
 }
-OptionalPair<Vector2f> Collider::CirclePolygonHelper(Transform& transformA, float radiusA, Transform& transformB, vector<Vector2f> pointsB) {
+vector<Vector2f> Collider::CirclePolygonHelper(Transform& transformA, float radiusA, Transform& transformB, vector<Vector2f> pointsB) {
     float minDistace;
     Vector2f cp;
     for (size_t i = 0; i < pointsB.size(); i++) {
@@ -152,7 +143,7 @@ OptionalPair<Vector2f> Collider::CirclePolygonHelper(Transform& transformA, floa
     }
     return {cp};
 }
-OptionalPair<Vector2f> Collider::PolygonPolygonHelper(Transform& transformA, vector<Vector2f> pointsA, Transform& transformB, vector<Vector2f> pointsB) {
+vector<Vector2f> Collider::PolygonPolygonHelper(Transform& transformA, vector<Vector2f> pointsA, Transform& transformB, vector<Vector2f> pointsB) {
     Vector2f contact1 = Maths::zero();
     Vector2f contact2 = Maths::zero();
     float minDistace = FLT_MAX;

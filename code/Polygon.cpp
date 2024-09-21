@@ -21,6 +21,7 @@ size_t Polygon::getNormalVectors(Transform transform, vector<Vector2f>& out) con
     }
     return points.size();
 }
+/*
 float Polygon::getMaxProjection(Transform transform, Vector2f normal) const {
     float max;
     for (size_t i = 0; i < points.size(); i++) {
@@ -41,6 +42,7 @@ float Polygon::getMinProjection(Transform transform, Vector2f normal) const {
     }
     return min;
 }
+*/
 std::array<float, 2> Polygon::getProjection(Transform transform, Vector2f normal) const {
     float min;
     float max;

@@ -1,7 +1,7 @@
 #include "headers/PhysicsObject.hpp"
 
 float PhysicsObject::gravity = 100;
-float PhysicsObject::drag = 0.001; 
+float PhysicsObject::drag = 0.1; 
 float PhysicsObject::angularDrag = 10;
 
 
@@ -21,9 +21,9 @@ PhysicsObject::PhysicsObject(Transform _transform, Collider* _collider, float _m
     inv_inertia = this->isStatic ? 0 : 1.f / this->inertia;
 
 
-    material.elasticity = 0;
-    material.dynamicFriction = 0.6;
-    material.staticFriction = 0.4;
+    material.elasticity = 1;
+    material.dynamicFriction = 0.4;
+    material.staticFriction = 0.6;
 }
 PhysicsObject::~PhysicsObject() {
     delete(collider);
@@ -76,15 +76,17 @@ void PhysicsObject::step(float dt) {
         collider->setRotation(rotateTo);
     }
 }
-PhysicsObject::CollisionPair PhysicsObject::getCollision(PhysicsObject* A, PhysicsObject* B) {
+optional<PhysicsObject::CollisionPair> PhysicsObject::getCollision(PhysicsObject* A, PhysicsObject* B) {
     CollisionPair cp;
     cp.bodyA = A;
     cp.bodyB = B;
     
-    cp = A->collider->getCollision(B->collider);
-    if (!cp) {
+    auto result = A->collider->getCollision(B->collider);
+    if (!result) {
         return cp;
     }
+
+    cp = *result;
 
     for (Vector2f contact : cp.contacts) {
         Vector2f rel_vel = B->getLinearVel(contact) - A->getLinearVel(contact);
