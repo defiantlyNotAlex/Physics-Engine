@@ -50,13 +50,15 @@ class PhysicsObject : public Node {
                 
                 Vector2f normal;
                 float depth;
-                vector<Vector2f> contacts;
-                vector<Vector2f> relativeVels;
+                array<Vector2f, 2> contacts;
+                array<Vector2f, 2> relativeVels;
+                size_t contact_count;
 
                 CollisionPair& operator=(Collider::Collision cm) {
                     normal = cm.normal;
                     depth = cm.depth;
                     contacts = cm.contacts;
+                    contact_count = cm.contact_count;
                     return *this;
                 };
         };

@@ -16,9 +16,9 @@ class Collider : public Node {
         Shape* shape;
         
         static float pointSegmentDistace(Vector2f point, Vector2f A, Vector2f B, Vector2f& contactPoint);
-        static vector<Vector2f> CircleCircleHelper(Transform& transformA, float radiusA, Transform& transformB, float radiusB);
-        static vector<Vector2f> CirclePolygonHelper(Transform& transformA, float radiusA, Transform& transformB, vector<Vector2f> pointsB);
-        static vector<Vector2f> PolygonPolygonHelper(Transform& transformA, vector<Vector2f> pointsA, Transform& transformB, vector<Vector2f> pointsB);
+        static size_t CircleCircleHelper(Transform& transformA, float radiusA, Transform& transformB, float radiusB, array<Vector2f, 2>& out);
+        static size_t CirclePolygonHelper(Transform& transformA, float radiusA, Transform& transformB, vector<Vector2f> pointsB, array<Vector2f, 2>& out);
+        static size_t PolygonPolygonHelper(Transform& transformA, vector<Vector2f> pointsA, Transform& transformB, vector<Vector2f> pointsB, array<Vector2f, 2>& out);
     public:
         Collider(Transform _transform, Shape * _shape);
         Collider(Shape* _shape);
@@ -40,11 +40,12 @@ class Collider : public Node {
 
         struct Collision {
             public:
-                vector<Vector2f> contacts;
+                array<Vector2f, 2> contacts;
+                size_t contact_count;
                 Vector2f normal;
                 float depth;
         };
 
         optional<Collision> getCollision(Collider* other);
-        vector<Vector2f> getContactPoint(Collider* other);
+        size_t getContactPoint(Collider* other, array<Vector2f, 2>& out);
 };

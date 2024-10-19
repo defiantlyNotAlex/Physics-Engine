@@ -79,14 +79,15 @@ optional<PhysicsObject::CollisionPair> PhysicsObject::getCollision(PhysicsObject
     
     auto result = A->collider->getCollision(B->collider);
     if (!result) {
-        return cp;
+        return {};
     }
 
     cp = *result;
 
-    for (Vector2f contact : cp.contacts) {
+    for (size_t i = 0; i < cp.contact_count; i++) {
+        auto contact = cp.contacts[i];
         Vector2f rel_vel = B->getLinearVel(contact) - A->getLinearVel(contact);
-        cp.relativeVels.push_back(rel_vel);
+        cp.relativeVels[i] = rel_vel;
     }
 
     return cp;
@@ -123,7 +124,7 @@ void PhysicsObject::solveImpulse(CollisionPair& col) {
     };
     vector<impulse> impulses;
 
-    for (size_t i = 0; i < col.contacts.size(); i++) {
+    for (size_t i = 0; i < col.contact_count; i++) {
         Vector2f contact = col.contacts[i];
         Vector2f relativeVelocity = col.relativeVels[i];
 
