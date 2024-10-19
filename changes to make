@@ -9,7 +9,7 @@
 
 
 physics objects should own their colliders
-replace the vectors for collision points with arrays to reduce indirection and heap usage
+replace the vectors for collision points with arrays to reduce indirection and heap usage -done
 replace the shapes with shape specific colliders to decrease levels of polymorphism
 try to get the physics objects stored in a in a flat vector to improve cache locality
 make the physics update not framerate dependent
