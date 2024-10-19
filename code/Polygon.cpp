@@ -8,12 +8,13 @@ const vector<Vector2f>& Polygon::getPoints() const {
 }
 vector<Vector2f> Polygon::getTransformedPoints(Transform transform) const {
     vector<Vector2f> ret_array;
-    for (Vector2f point : points) {
-        ret_array.push_back(transform.convertLocaltoWorld(point));
+    ret_array.resize(points.size());
+    for (size_t i = 0; i < points.size(); i++) {
+        ret_array[i] = transform.convertLocaltoWorld(points[i]);
     }
     return ret_array;
 }
-size_t Polygon::getNormalVectors(Transform transform, vector<Vector2f>& out) const {
+size_t Polygon::getNormalVectors(Transform transform, const vector<Vector2f>& otherFeatures, vector<Vector2f>& out) const {
     for (size_t i = 0; i < points.size(); i++) {
         auto prev = transform.convertLocaltoWorld(points[i]);
         auto curr = transform.convertLocaltoWorld(points[(i+1)%points.size()]);
@@ -21,28 +22,6 @@ size_t Polygon::getNormalVectors(Transform transform, vector<Vector2f>& out) con
     }
     return points.size();
 }
-/*
-float Polygon::getMaxProjection(Transform transform, Vector2f normal) const {
-    float max;
-    for (size_t i = 0; i < points.size(); i++) {
-        float d = Maths::dotProd(normal, transform.convertLocaltoWorld(points[i]));
-        if (i == 0 || d > max) {
-            max = d;
-        }
-    }
-    return max;
-}
-float Polygon::getMinProjection(Transform transform, Vector2f normal) const {
-    float min;
-    for (size_t i = 0; i < points.size(); i++) {
-        float d = Maths::dotProd(normal, transform.convertLocaltoWorld(points[i]));
-        if (i == 0 || d < min) {
-            min = d;
-        }
-    }
-    return min;
-}
-*/
 std::array<float, 2> Polygon::getProjection(Transform transform, Vector2f normal) const {
     float min;
     float max;
@@ -59,13 +38,6 @@ std::array<float, 2> Polygon::getProjection(Transform transform, Vector2f normal
 }
 vector<Vector2f> Polygon::getFeatures(Transform transform) const {
     return getTransformedPoints(transform);
-}
-void Polygon::getNormalVectors(Transform transform, const vector<Vector2f>& otherFeatures, vector<Vector2f>& out) const {
-    for (size_t i = 1; i < points.size(); i++) {
-        auto prev = transform.convertLocaltoWorld(points[i-1]);
-        auto curr = transform.convertLocaltoWorld(points[i]);
-        out.push_back(Maths::normalise(Maths::rotate90_ACW(curr - prev)));   
-    }
 }
 bool Polygon::checkPoint(Transform transform, Vector2f point) const {
     for (size_t i = 0; i < points.size(); i++) {

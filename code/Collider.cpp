@@ -50,14 +50,21 @@ bool Collider::checkCollision(Collider* other) {
     }
     return true;
 }
+
+// change the collider schema so that 
 optional<Collider::Collision> Collider::getCollision(Collider* other) {
     Collision res;
     if (!boundingBox.checkOverlap(other->boundingBox)) return {};
 
     vector<Vector2f> normalVectors;
 
-    this->shape->getNormalVectors(this->transform, other->shape->getFeatures(other->transform), normalVectors);
-    other->shape->getNormalVectors(other->transform, this->shape->getFeatures(this->transform), normalVectors);
+    auto other_features = other->shape->getFeatures(other->transform);
+    auto this_features = this->shape->getFeatures(this->transform);
+
+    normalVectors.reserve(other_features.size() + this_features.size());
+
+    this->shape->getNormalVectors(this->transform, other_features, normalVectors);
+    other->shape->getNormalVectors(other->transform, this_features, normalVectors);
 
     for (size_t i = 0; i < normalVectors.size(); i++) {
         Vector2f normal = normalVectors[i];
