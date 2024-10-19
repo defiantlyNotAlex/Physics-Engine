@@ -4,7 +4,11 @@
 using std::vector;
 
 class Node {
+    friend class World; // allows world to call propagateUpdate
+    protected:
+        void propagateUpdate(float dt);
     public:
+        
         Transform transform;
         vector<Node*> children;
         
@@ -14,7 +18,7 @@ class Node {
         Node(Transform _transform) : Node(nullptr, _transform) {};
         Node();
         ~Node();
-        void propagateUpdate(float dt);
+        
         virtual void update(float dt);
         Node* addChild(Node* component);
         void removeChild(Node* component);

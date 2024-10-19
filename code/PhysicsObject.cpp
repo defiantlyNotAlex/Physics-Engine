@@ -1,7 +1,7 @@
 #include "headers/PhysicsObject.hpp"
 
 float PhysicsObject::gravity = 100;
-float PhysicsObject::drag = 0.1; 
+float PhysicsObject::drag = 0.01; 
 float PhysicsObject::angularDrag = 10;
 
 
@@ -21,7 +21,7 @@ PhysicsObject::PhysicsObject(Transform _transform, Collider* _collider, float _m
     inv_inertia = this->isStatic ? 0 : 1.f / this->inertia;
 
 
-    material.elasticity = 1;
+    material.elasticity = 0.33;
     material.dynamicFriction = 0.4;
     material.staticFriction = 0.6;
 }
@@ -51,15 +51,13 @@ Vector2f PhysicsObject::getLinearVel(Vector2f point) {
 }
 
 void PhysicsObject::step(float dt) {
-    applyForce(dt, Maths::down() * gravity * this->mass, transform.pos);
-
     if (isStatic) {
         velocity = Maths::zero();
         angularVelocity = 0;
         return;
     }
-    
-    applyForce(dt, -velocity * Maths::magnitude(velocity) * drag, this->getPosition());
+    applyForce(dt, Maths::down() * gravity * this->mass);
+    applyForce(dt, -velocity * Maths::magnitude(velocity) * drag);
     applyTorque(dt, -angularDrag * angularVelocity);
 
     auto pos = transform.pos;
@@ -68,13 +66,11 @@ void PhysicsObject::step(float dt) {
     auto moveTo = transform.pos + velocity * dt;
     auto rotateTo = transform.rot + angularVelocity * dt;
 
-    if (!isStatic) {
-        transform.pos = moveTo;
-        collider->setPosition(moveTo);    
+    transform.pos = moveTo;
+    collider->setPosition(moveTo);    
 
-        transform.rot = rotateTo;
-        collider->setRotation(rotateTo);
-    }
+    transform.rot = rotateTo;
+    collider->setRotation(rotateTo);
 }
 optional<PhysicsObject::CollisionPair> PhysicsObject::getCollision(PhysicsObject* A, PhysicsObject* B) {
     CollisionPair cp;
@@ -95,7 +91,7 @@ optional<PhysicsObject::CollisionPair> PhysicsObject::getCollision(PhysicsObject
 
     return cp;
 }
-void PhysicsObject::solvePositions(CollisionPair col) {
+void PhysicsObject::solvePositions(CollisionPair& col) {
     // each is moved according to 1 - total_mass / individual_mass
     float mass_ratio_A;
     float mass_ratio_B;
@@ -116,7 +112,7 @@ void PhysicsObject::solvePositions(CollisionPair col) {
     col.bodyB->setPosition(col.bodyB->getPosition() - col.normal * col.depth * mass_ratio_B);
 }
 
-void PhysicsObject::solveImpulse(CollisionPair col) {
+void PhysicsObject::solveImpulse(CollisionPair& col) {
     struct impulse {
         Vector2f force;
         Vector2f location;
@@ -184,8 +180,8 @@ void PhysicsObject::solveImpulse(CollisionPair col) {
     }
     // apply the impulses
     for (auto impulse : impulses) {
-        col.bodyA->applyForce(1, -impulse.force / 2.f, impulse.location);
-        col.bodyB->applyForce(1, impulse.force / 2.f, impulse.location);
+        col.bodyA->applyForce(1, -impulse.force, impulse.location);
+        col.bodyB->applyForce(1, impulse.force, impulse.location);
     }
 }
 
@@ -193,6 +189,10 @@ void PhysicsObject::applyForce(float dt, Vector2f force, Vector2f forcePos) {
     if (isStatic) return;
     velocity += dt * force * inv_mass;
     angularVelocity += dt * Maths::crossProd(forcePos - transform.pos, force) * inv_inertia;
+}
+void PhysicsObject::applyForce(float dt, Vector2f force) {
+    if (isStatic) return;
+    velocity += dt * force * inv_mass;
 }
 void PhysicsObject::applyTorque(float dt, float torque) {
     if (isStatic) return;

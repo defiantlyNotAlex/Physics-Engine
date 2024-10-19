@@ -80,7 +80,7 @@ int main() {
         }
         
         Vector2f display = world.objectList[0]->velocity;
-        text.setString(std::to_string(display.x) + ", " + std::to_string(display.y) + "Rotation: " + std::to_string(B->angularVelocity));
+        //text.setString(std::to_string(display.x) + ", " + std::to_string(display.y) + "Rotation: " + std::to_string(B->angularVelocity));
         window.clear();
     
         window.draw(text);

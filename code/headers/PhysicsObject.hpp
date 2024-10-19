@@ -31,11 +31,11 @@ class PhysicsObject : public Node {
         bool isStatic = false;
 
         Collider* collider;
-        vector<Vector2i> chunkList;
 
         /// @brief attempts to move and rotate
         void step(float dt);
         void applyForce(float dt, Vector2f force, Vector2f forcePos);
+        void applyForce(float dt, Vector2f force);
         void applyTorque(float dt, float torque);
 
         Vector2f getPosition();
@@ -63,6 +63,6 @@ class PhysicsObject : public Node {
 
         Vector2f getLinearVel(Vector2f point);
         static optional<CollisionPair> getCollision(PhysicsObject* A, PhysicsObject* B);
-        static void solveImpulse(CollisionPair cm);
-        static void solvePositions(CollisionPair cp);
+        static void solveImpulse(CollisionPair& cm);
+        static void solvePositions(CollisionPair& cp);
 };
