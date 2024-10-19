@@ -31,8 +31,8 @@ int main() {
     world.root->addChild(world.newObject(C));
     world.root->addChild(world.newObject(Big));
 
-    for (size_t i = 0; i < 5; i++) {
-        for (size_t j = 0; j < 5; j++) {
+    for (size_t i = 0; i < 10; i++) {
+        for (size_t j = 0; j < 10; j++) {
             world.root->addChild(world.newObject(new PhysicsObject(Transform({(float)i*20, -(float)j*20}), new Collider(new Rect({10, 10})), 1, 16)));
         }
     }
