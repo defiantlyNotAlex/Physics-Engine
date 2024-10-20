@@ -62,7 +62,7 @@ int main() {
         
         world.update(dt);
         
-        world.physicsUpdate(dt, 10);
+        world.physicsUpdate(dt, 1);
 
         sf::Event event;
         while (window.pollEvent(event))
