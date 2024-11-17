@@ -8,6 +8,7 @@ using std::optional;
 using std::vector;
 #include <array>
 using std::array;
+#include "debug.hpp"
 
 
 class Collider : public Node {

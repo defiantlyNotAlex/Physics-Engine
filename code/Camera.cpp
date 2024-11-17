@@ -17,12 +17,12 @@ const sf::RenderWindow* Camera::getWindow() {
 
 Vector2f Camera::convertWorldtoDisplay(Vector2f world) {
     const Vector2f local = transform.convertWorldtoLocal(world); 
-    const Vector2f adjusted = local * scale;
+    const Vector2f adjusted = Maths::componentProd(local * scale, {1, 1});
     return adjusted + Vector2f(window->getSize().x, window->getSize().y)/2.f;
 }
 Vector2f Camera::convertDisplaytoWorld(Vector2f display) {
     const Vector2f adjusted = display - Vector2f(window->getSize().x, window->getSize().y)/2.f;
-    const Vector2f local = adjusted / scale;
+    const Vector2f local = Maths::componentProd(local / scale, {1, 1});;
     return transform.convertLocaltoWorld(local);
 }
 void Camera::drawShape(Transform shapeTransform, Shape* shape, sf::Color colour, sf::Texture* sprite) {

@@ -2,27 +2,33 @@
 
 Polygon::Polygon(vector<Vector2f> _points) {
     points = _points;
+    transformedPoints = _points;
 }  
 const vector<Vector2f>& Polygon::getPoints() const {
     return points;
 }
-vector<Vector2f> Polygon::getTransformedPoints(Transform transform) const {
-    vector<Vector2f> ret_array;
-    ret_array.resize(points.size());
+void Polygon::updateTransformedPoints(Transform transform) {
     for (size_t i = 0; i < points.size(); i++) {
-        ret_array[i] = transform.convertLocaltoWorld(points[i]);
+        transformedPoints[i] = transform.convertLocaltoWorld(points[i]);
     }
-    return ret_array;
+}
+const vector<Vector2f>& Polygon::getTransformedPoints() const{
+    TIMERSTART();
+    return transformedPoints;
+    TIMEREND();
 }
 size_t Polygon::getNormalVectors(Transform transform, const vector<Vector2f>& otherFeatures, vector<Vector2f>& out) const {
+    TIMERSTART();
     for (size_t i = 0; i < points.size(); i++) {
         auto prev = transform.convertLocaltoWorld(points[i]);
         auto curr = transform.convertLocaltoWorld(points[(i+1)%points.size()]);
         out.push_back(Maths::normalise(Maths::rotate90_ACW(curr - prev)));   
     }
     return points.size();
+    TIMEREND();
 }
 std::array<float, 2> Polygon::getProjection(Transform transform, Vector2f normal) const {
+    TIMERSTART();
     float min;
     float max;
     for (size_t i = 0; i < points.size(); i++) {
@@ -34,10 +40,11 @@ std::array<float, 2> Polygon::getProjection(Transform transform, Vector2f normal
             max = d;
         }
     }
+    TIMEREND();
     return {min, max};
 }
-vector<Vector2f> Polygon::getFeatures(Transform transform) const {
-    return getTransformedPoints(transform);
+const vector<Vector2f>& Polygon::getFeatures() const {
+    return getTransformedPoints();
 }
 bool Polygon::checkPoint(Transform transform, Vector2f point) const {
     for (size_t i = 0; i < points.size(); i++) {

@@ -2,18 +2,25 @@
 
 Circle::Circle(float _radius) {
     radius = _radius;
+    centre = {{0.f, 0.f}};
 }  
 float Circle::getRadius() const {
     return radius;
 }
+void Circle::updateTransformedPoints(Transform transform) {
+    centre[0] = transform.pos;
+}
 std::array<float, 2> Circle::getProjection(Transform transform, Vector2f normal) const {
+    TIMERSTART();
     float proj = Maths::dotProd(transform.pos, normal);
+    TIMEREND();
     return {proj - radius, proj + radius};
 }
-vector<Vector2f> Circle::getFeatures(Transform transform) const {
-    return {transform.pos};
+const vector<Vector2f>& Circle::getFeatures() const {
+    return centre;
 }
 size_t Circle::getNormalVectors(Transform transform, const vector<Vector2f>& otherFeatures, vector<Vector2f>& out) const {
+    TIMERSTART();
     float minDist;
     Vector2f min;
     for (size_t i = 0; i < otherFeatures.size(); i++) {
@@ -26,6 +33,7 @@ size_t Circle::getNormalVectors(Transform transform, const vector<Vector2f>& oth
         
     }
     out.push_back(Maths::normalise(min));
+    TIMEREND();
     return 1;
 }
 bool Circle::checkPoint(Transform transform, Vector2f point) const {

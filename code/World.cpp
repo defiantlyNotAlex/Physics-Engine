@@ -7,6 +7,12 @@ void World::update(float dt) {
     root->propagateUpdate(dt);
 }
 void World::physicsUpdate(float dt, size_t iterations) {
+    TIMERSTART();
+    boxList.resize(objectList.size());
+    for (size_t i = 0; i < objectList.size(); i++) {
+        auto obj = objectList[i];
+        boxList[i] = obj->collider->getBoundingBox();
+    }
     dt = dt / (float)iterations;
     for (size_t it = 0; it < iterations; it++) {
         for (PhysicsObject* obj : objectList) {
@@ -17,6 +23,7 @@ void World::physicsUpdate(float dt, size_t iterations) {
         
         for (size_t i = 0; i < objectList.size(); i++) {
             for (size_t j = i + 1; j < objectList.size(); j++) {
+                if (!boxList[i].checkOverlap(boxList[j])) continue;
                 PhysicsObject* bodyA = objectList[i];
                 PhysicsObject* bodyB = objectList[j];
                 if (bodyA->isStatic && bodyB->isStatic) continue;
@@ -34,6 +41,7 @@ void World::physicsUpdate(float dt, size_t iterations) {
             PhysicsObject::solvePositions(col);
         }
     }
+    TIMEREND();
 }
 
 void World::delObject(PhysicsObject* obj) {

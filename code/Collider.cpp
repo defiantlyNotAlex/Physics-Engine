@@ -23,24 +23,29 @@ Shape* Collider::getShape() {
 void Collider::setPosition(Vector2f pos) {
     transform.pos = pos;
     updateBounds();
+    shape->updateTransformedPoints(transform);
 }
 void Collider::setRotation(float rot) {
     transform.rot = rot;
     updateBounds();
+    shape->updateTransformedPoints(transform);
 }
 bool Collider::checkPoint(Vector2f point) {
     return shape->checkPoint(transform, point);
 }
 void Collider::updateBounds() {
+    TIMERSTART();
     boundingBox = shape->getBoundingBox(transform);
+    TIMEREND();
 }
 bool Collider::checkCollision(Collider* other) {
     if (!boundingBox.checkOverlap(other->boundingBox)) return false;
 
     vector<Vector2f> normalVectors;
+    normalVectors.reserve(other->shape->getFeatures().size() + this->shape->getFeatures().size());
 
-    this->shape->getNormalVectors(this->transform, other->shape->getFeatures(other->transform), normalVectors);
-    other->shape->getNormalVectors(other->transform, this->shape->getFeatures(this->transform), normalVectors);
+    this->shape->getNormalVectors(this->transform, other->shape->getFeatures(), normalVectors);
+    other->shape->getNormalVectors(other->transform, this->shape->getFeatures(), normalVectors);
 
     for (Vector2f normal : normalVectors) {
         std::array<float, 2> thisExtreama = this->shape->getProjection(this->transform, normal);
@@ -53,13 +58,17 @@ bool Collider::checkCollision(Collider* other) {
 
 // change the collider schema so that 
 optional<Collider::Collision> Collider::getCollision(Collider* other) {
+    TIMERSTART();
+    if (!boundingBox.checkOverlap(other->boundingBox)) {
+        TIMEREND();
+        return {};
+    }
     Collision res;
-    if (!boundingBox.checkOverlap(other->boundingBox)) return {};
 
     vector<Vector2f> normalVectors;
 
-    auto other_features = other->shape->getFeatures(other->transform);
-    auto this_features = this->shape->getFeatures(this->transform);
+    const vector<Vector2f>& other_features = other->shape->getFeatures();
+    const vector<Vector2f>& this_features = this->shape->getFeatures();
 
     normalVectors.reserve(other_features.size() + this_features.size());
 
@@ -84,11 +93,14 @@ optional<Collider::Collision> Collider::getCollision(Collider* other) {
 
         if (!(thisExtreama[0] < otherExtreama[1] && thisExtreama[1] > otherExtreama[0])) return {};
     }
+    TIMEREND();
     res.contact_count = getContactPoint(other, res.contacts);
+    
     return res;
 }
 
 float Collider::pointSegmentDistace(Vector2f P, Vector2f A, Vector2f B, Vector2f& contactPoint) {
+    TIMERSTART();
     Vector2f AB = B - A;
     Vector2f AP = P - A;
 
@@ -104,22 +116,28 @@ float Collider::pointSegmentDistace(Vector2f P, Vector2f A, Vector2f B, Vector2f
         contactPoint = A + AB * d;
     }
     return Maths::magnitudeSqr(P - contactPoint);
+    TIMEREND();
 }
 
 size_t Collider::getContactPoint(Collider* other, array<Vector2f, 2>& out) {
+    TIMERSTART();
     Circle* A_circ = dynamic_cast<Circle*>(this->getShape());
     Circle* B_circ = dynamic_cast<Circle*>(other->getShape());
     if (A_circ != nullptr && B_circ != nullptr) {
+        TIMEREND();
         return CircleCircleHelper(this->transform, A_circ->getRadius(), other->transform, B_circ->getRadius(), out);
     }
     Polygon* A_poly = dynamic_cast<Polygon*>(this->getShape());
     Polygon* B_poly = dynamic_cast<Polygon*>(other->getShape());
     if (A_circ != nullptr) {
+        TIMEREND();
         return CirclePolygonHelper(this->transform, A_circ->getRadius(), other->transform, B_poly->getPoints(), out);
     }
     if (B_circ != nullptr) {
+        TIMEREND();
         return CirclePolygonHelper(other->transform, B_circ->getRadius(), this->transform, A_poly->getPoints(), out);
     }
+    TIMEREND();
     return PolygonPolygonHelper(this->transform, A_poly->getPoints(), other->transform, B_poly->getPoints(), out);
 }
 
@@ -151,8 +169,6 @@ size_t Collider::CirclePolygonHelper(Transform& transformA, float radiusA, Trans
     return 1;
 }
 size_t Collider::PolygonPolygonHelper(Transform& transformA, vector<Vector2f> pointsA, Transform& transformB, vector<Vector2f> pointsB, array<Vector2f, 2>& out) {
-    Vector2f contact1 = Maths::zero();
-    Vector2f contact2 = Maths::zero();
     float minDistace = FLT_MAX;
     size_t contactCount = 0;
 
@@ -164,7 +180,7 @@ size_t Collider::PolygonPolygonHelper(Transform& transformA, vector<Vector2f> po
             Vector2f cp;
             float distSqr = pointSegmentDistace(P, A, B, cp);
             if (Maths::nearlyEqual(distSqr, minDistace)) {
-                if (!Maths::nearlyEqual(cp, contact1)) {
+                if (!Maths::nearlyEqual(cp, out[0])) {
                     out[1] = cp;
                     contactCount = 2;
                 }
@@ -183,8 +199,8 @@ size_t Collider::PolygonPolygonHelper(Transform& transformA, vector<Vector2f> po
             Vector2f cp;
             float distSqr = pointSegmentDistace(P, A, B, cp);
             if (Maths::nearlyEqual(distSqr, minDistace)) {
-                if (!Maths::nearlyEqual(cp, contact1)) {
-                    contact2 = cp;
+                if (!Maths::nearlyEqual(cp, out[0])) {
+                    out[1] = cp;
                     contactCount = 2;
                 }
             } else if (distSqr < minDistace) {

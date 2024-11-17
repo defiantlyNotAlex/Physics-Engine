@@ -11,4 +11,5 @@ bool const AABB::checkPoint (Vector2f point) {
         && point.x > min.x
         && point.y < max.y
         && point.y > min.y;
+
 }
