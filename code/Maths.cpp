@@ -46,12 +46,6 @@ Vector3f Maths::convertTo3D(Vector2f A) {
 Vector2f Maths::convertTo2D(Vector3f A) {
     return Vector2f(A.x, A.y);
 }
-Vector2f Maths::project(Vector2f A, Vector2f B) {
-    return Maths::dotProd(A, B) * B;
-}
-float Maths::projectScaler(Vector2f A, Vector2f B) {
-    return Maths::dotProd(A, B) / magnitude(B);
-}
 Vector2f Maths::directionVector(float angle) {
     return Vector2f (std::cos(angle), std::sin(angle));
 }
@@ -76,9 +70,6 @@ Vector2f Maths::toFloat(Vector2i A) {
 
 bool Maths::nearlyEqual(Vector2f A, Vector2f B) {
     return Maths::magnitude(A - B) < Maths::epsilon;
-}
-size_t Maths::hash(Vector2i A) {
-    return ((size_t)A.x << 32) + (size_t)A.y;
 }
 
 string Maths::toString(Vector2f A) {
