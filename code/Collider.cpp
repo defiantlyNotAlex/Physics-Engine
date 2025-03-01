@@ -151,7 +151,7 @@ size_t Collider::CircleCircleHelper(Transform& transformA, float radiusA, Transf
     return 1; 
 }
 size_t Collider::CirclePolygonHelper(Transform& transformA, float radiusA, Transform& transformB, vector<Vector2f> pointsB, array<Vector2f, 2>& out) {
-    float minDistace;
+    float minDistace = 0;
     for (size_t i = 0; i < pointsB.size(); i++) {
         const Vector2f A = transformB.convertLocaltoWorld(pointsB[i]);
         const Vector2f B = transformB.convertLocaltoWorld(pointsB[(i+1)%pointsB.size()]);

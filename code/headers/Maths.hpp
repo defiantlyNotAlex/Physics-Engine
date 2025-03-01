@@ -27,7 +27,6 @@ namespace Maths {
     Vector2f rotate90_CW(Vector2f A);
     Vector2f rotate90_ACW(Vector2f A);
     Vector2f rotate(Vector2f A, float angle);
-
     
     float dotProd(Vector2f A, Vector2f B);
     float crossProd(Vector2f A, Vector2f B);
@@ -44,8 +43,6 @@ namespace Maths {
     float dotProd(Vector3f A, Vector3f B);
     Vector3f crossProd(Vector3f A, Vector3f B);
     
-    
-
     Vector2i floorToInt(Vector2f A);
     Vector2i ceilToInt(Vector2f A);
     Vector2f toFloat(Vector2i A);

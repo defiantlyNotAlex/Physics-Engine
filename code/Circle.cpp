@@ -21,7 +21,7 @@ const vector<Vector2f>& Circle::getFeatures() const {
 }
 size_t Circle::getNormalVectors(Transform transform, const vector<Vector2f>& otherFeatures, vector<Vector2f>& out) const {
     TIMERSTART();
-    float minDist;
+    float minDist = 0;
     Vector2f min;
     for (size_t i = 0; i < otherFeatures.size(); i++) {
         Vector2f displacement = transform.pos - otherFeatures[i];

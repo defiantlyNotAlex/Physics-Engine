@@ -9,9 +9,9 @@ class MouseGrabber : public Node {
     public:
         MouseGrabber(World* world);
         Vector2f mousePos;
-        weak_ptr<PhysicsObject> grabbed;
+        PhysicsObject* grabbed;
         Vector2f posGrabbed;
-        void updatePos(shared_ptr<Camera> camera);
+        void updatePos(Camera* camera);
         void update(float dt);
         void attemptGrab();
         void letGo();

@@ -22,7 +22,7 @@ Vector2f Camera::convertWorldtoDisplay(Vector2f world) {
 }
 Vector2f Camera::convertDisplaytoWorld(Vector2f display) {
     const Vector2f adjusted = display - Vector2f(window->getSize().x, window->getSize().y)/2.f;
-    const Vector2f local = Maths::componentProd(local / scale, {1, 1});;
+    const Vector2f local = Maths::componentProd(adjusted / scale, {1, 1});;
     return transform.convertLocaltoWorld(local);
 }
 void Camera::drawShape(Transform shapeTransform, Shape* shape, sf::Color colour, sf::Texture* sprite) {

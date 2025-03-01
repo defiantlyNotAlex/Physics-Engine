@@ -29,8 +29,8 @@ size_t Polygon::getNormalVectors(Transform transform, const vector<Vector2f>& ot
 }
 std::array<float, 2> Polygon::getProjection(Transform transform, Vector2f normal) const {
     TIMERSTART();
-    float min;
-    float max;
+    float min = 0;
+    float max = 0;
     for (size_t i = 0; i < points.size(); i++) {
         float d = Maths::dotProd(normal, transform.convertLocaltoWorld(points[i]));
         if (i == 0 || d < min) {

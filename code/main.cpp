@@ -38,13 +38,12 @@ int main() {
     }
     
     std::vector<std::string> times;
-    sf::Mouse mouse;
+    //sf::Mouse mouse;
 
     sf::Text text;
     text.setFont(font);
     float time = 0;
     int64_t frameCount = 0;
-    bool pressedLastFrame = false;
 
     while (window.isOpen())
     {
@@ -52,14 +51,10 @@ int main() {
         float dt = deltaTime.asSeconds();
 
 
-        auto mpos = mouse.getPosition(window);
-        auto mouseWorldPos = world.mainCamera->convertDisplaytoWorld(Vector2f(mpos));        
-        
         time += dt;
         frameCount++;
         
         mg->updatePos(world.mainCamera);
-        
         world.update(dt);
         
         world.physicsUpdate(dt, 1);

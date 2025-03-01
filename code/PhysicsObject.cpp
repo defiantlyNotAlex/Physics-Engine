@@ -61,9 +61,6 @@ void PhysicsObject::step(float dt) {
     applyForce(dt, -velocity * Maths::magnitude(velocity) * drag);
     applyTorque(dt, -angularDrag * angularVelocity);
 
-    auto pos = transform.pos;
-    auto rot = transform.rot;
-
     auto moveTo = transform.pos + velocity * dt;
     auto rotateTo = transform.rot + angularVelocity * dt;
 
