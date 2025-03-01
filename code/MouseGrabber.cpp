@@ -11,7 +11,7 @@ void MouseGrabber::updatePos(Camera * camera) {
 void MouseGrabber::update(float dt) {
     if (grabbed) {
         Vector2f grab = grabbed->transform.convertLocaltoWorld(posGrabbed);
-        grabbed->applyForce(dt, 2.f * (mousePos - grab), grab);
+        grabbed->applyForce(dt, 10.f * (mousePos - grab), grab);
         
     }
 

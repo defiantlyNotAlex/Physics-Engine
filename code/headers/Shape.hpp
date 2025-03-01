@@ -4,6 +4,7 @@
 #include "AABB.hpp"
 #include <array>
 #include <vector>
+#include "debug.hpp"
 using std::vector;
 #include <iostream>
 /// @brief Collider Shape: stores the untransformed information about the shape
@@ -15,9 +16,10 @@ class Shape {
         /// @returns {min, max} 
         virtual std::array<float, 2> getProjection(Transform transform, Vector2f normal) const = 0;
         /// @brief returns the vertices and the centre for circles
-        virtual vector<Vector2f> getFeatures(Transform transform) const = 0;
+        virtual const vector<Vector2f>& getFeatures() const = 0;
         /// @brief Gers all of the normal vectors to test for the SAT and appends them to the list provided
-        virtual void getNormalVectors(Transform transform, const vector<Vector2f>& otherFeatures, vector<Vector2f>& out) const = 0;
+        virtual size_t getNormalVectors(Transform transform, const vector<Vector2f>& otherFeatures, vector<Vector2f>& out) const = 0;
+        virtual void updateTransformedPoints(Transform transform) = 0;
 
         //virtual float getMaxProjection(Transform transform, Vector2f normal) const = 0;
         //virtual float getMinProjection(Transform transform, Vector2f normal) const = 0;
@@ -31,20 +33,16 @@ class Shape {
 class Circle : public Shape {
     private:
         float radius;
+        vector<Vector2f> centre;
     public:
         Circle(float radius);
         
         float getRadius() const;
-
+        void updateTransformedPoints(Transform transform);
+        const vector<Vector2f>& getFeatures() const;
         std::array<float, 2> getProjection(Transform transform, Vector2f normal) const;
-        vector<Vector2f> getFeatures(Transform transform) const;
-        void getNormalVectors(Transform transform, const vector<Vector2f>& otherFeatures, vector<Vector2f>& out) const;
-
-        size_t getNormalVectors(Transform transform, vector<Vector2f>& out) const;
-        
-        //float getMaxProjection(Transform transform, Vector2f normal) const;
-        //float getMinProjection(Transform transform, Vector2f normal) const;
-
+        size_t getNormalVectors(Transform transform, const vector<Vector2f>& otherFeatures, vector<Vector2f>& out) const;
+    
         bool checkPoint(Transform transform, Vector2f point) const;
         AABB getBoundingBox(Transform transform) const;
 };
@@ -52,19 +50,18 @@ class Circle : public Shape {
 class Polygon : public Shape {
     protected:
         vector<Vector2f> points;
+        vector<Vector2f> transformedPoints;
     public:
         Polygon(vector<Vector2f> points);
         
         const vector<Vector2f>& getPoints() const;
-        vector<Vector2f> getTransformedPoints(Transform transform) const;
+        const vector<Vector2f>& getTransformedPoints() const;
+        void updateTransformedPoints(Transform transform);
 
         std::array<float, 2> getProjection(Transform transform, Vector2f normal) const;
-        vector<Vector2f> getFeatures(Transform transform) const;
-        void getNormalVectors(Transform transform, const vector<Vector2f>& otherFeatures, vector<Vector2f>& out) const;
+        const vector<Vector2f>& getFeatures() const;
 
-        size_t getNormalVectors(Transform transform, vector<Vector2f>& out) const;
-        //float getMaxProjection(Transform transform, Vector2f normal) const;
-        //float getMinProjection(Transform transform, Vector2f normal) const;
+        size_t getNormalVectors(Transform transform, const vector<Vector2f>& otherFeatures, vector<Vector2f>& out) const;
 
         bool checkPoint(Transform transform, Vector2f point) const;
         AABB getBoundingBox(Transform transform) const;

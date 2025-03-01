@@ -2,30 +2,26 @@
 
 Circle::Circle(float _radius) {
     radius = _radius;
+    centre = {{0.f, 0.f}};
 }  
 float Circle::getRadius() const {
     return radius;
 }
-size_t Circle::getNormalVectors(Transform transform, vector<Vector2f>& out) const {
-    return 0;
+void Circle::updateTransformedPoints(Transform transform) {
+    centre[0] = transform.pos;
 }
-/*
-float Circle::getMaxProjection(Transform transform, Vector2f normal) const {
-    return Maths::dotProd(transform.pos, normal) + radius;
-}
-float Circle::getMinProjection(Transform transform, Vector2f normal) const {
-    return Maths::dotProd(transform.pos, normal) - radius;
-}
-*/
 std::array<float, 2> Circle::getProjection(Transform transform, Vector2f normal) const {
+    TIMERSTART();
     float proj = Maths::dotProd(transform.pos, normal);
+    TIMEREND();
     return {proj - radius, proj + radius};
 }
-vector<Vector2f> Circle::getFeatures(Transform transform) const {
-    return {transform.pos};
+const vector<Vector2f>& Circle::getFeatures() const {
+    return centre;
 }
-void Circle::getNormalVectors(Transform transform, const vector<Vector2f>& otherFeatures, vector<Vector2f>& out) const {
-    float minDist;
+size_t Circle::getNormalVectors(Transform transform, const vector<Vector2f>& otherFeatures, vector<Vector2f>& out) const {
+    TIMERSTART();
+    float minDist = 0;
     Vector2f min;
     for (size_t i = 0; i < otherFeatures.size(); i++) {
         Vector2f displacement = transform.pos - otherFeatures[i];
@@ -37,6 +33,8 @@ void Circle::getNormalVectors(Transform transform, const vector<Vector2f>& other
         
     }
     out.push_back(Maths::normalise(min));
+    TIMEREND();
+    return 1;
 }
 bool Circle::checkPoint(Transform transform, Vector2f point) const {
     return Maths::magnitudeSqr(transform.pos - point) <= radius * radius;

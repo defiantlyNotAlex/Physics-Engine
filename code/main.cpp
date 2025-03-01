@@ -37,14 +37,13 @@ int main() {
         }
     }
     
-
-    sf::Mouse mouse;
+    std::vector<std::string> times;
+    //sf::Mouse mouse;
 
     sf::Text text;
     text.setFont(font);
     float time = 0;
     int64_t frameCount = 0;
-    bool pressedLastFrame = false;
 
     while (window.isOpen())
     {
@@ -52,14 +51,10 @@ int main() {
         float dt = deltaTime.asSeconds();
 
 
-        auto mpos = mouse.getPosition(window);
-        auto mouseWorldPos = world.mainCamera->convertDisplaytoWorld(Vector2f(mpos));        
-        
         time += dt;
         frameCount++;
         
         mg->updatePos(world.mainCamera);
-        
         world.update(dt);
         
         world.physicsUpdate(dt, 10);
@@ -71,19 +66,26 @@ int main() {
                 window.close();
         }
         
-
-        
         if (time > 1) {
-            text.setString("FPS: " + std::to_string(frameCount));
+            times = Debug::print_timer(frameCount);
+            times.push_back("frame time: " + std::to_string(1000000/frameCount) + " us");
+            times.push_back("fps: " + std::to_string(frameCount));
             frameCount = 0;
             time = 0;
+            
         }
         
-        Vector2f display = world.objectList[0]->velocity;
         //text.setString(std::to_string(display.x) + ", " + std::to_string(display.y) + "Rotation: " + std::to_string(B->angularVelocity));
         window.clear();
-    
-        window.draw(text);
+        text.setPosition({0, 0});
+        for (auto s : times) {
+            text.setString(s);
+            window.draw(text);
+            text.setPosition(text.getPosition() + (Vector2f){0, 40});
+        }
+
+
+        
         for (PhysicsObject* obj : world.objectList) {
             world.mainCamera->drawShape(obj->transform, obj->collider->getShape());
         }
@@ -91,6 +93,8 @@ int main() {
         world.mainCamera->drawShape(B->transform, B->collider->getShape());
         world.mainCamera->drawShape(Big->transform, Big->collider->getShape());
         window.display(); 
+
+        
         
               
     }

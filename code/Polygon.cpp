@@ -2,50 +2,35 @@
 
 Polygon::Polygon(vector<Vector2f> _points) {
     points = _points;
+    transformedPoints = _points;
 }  
 const vector<Vector2f>& Polygon::getPoints() const {
     return points;
 }
-vector<Vector2f> Polygon::getTransformedPoints(Transform transform) const {
-    vector<Vector2f> ret_array;
-    for (Vector2f point : points) {
-        ret_array.push_back(transform.convertLocaltoWorld(point));
+void Polygon::updateTransformedPoints(Transform transform) {
+    for (size_t i = 0; i < points.size(); i++) {
+        transformedPoints[i] = transform.convertLocaltoWorld(points[i]);
     }
-    return ret_array;
 }
-size_t Polygon::getNormalVectors(Transform transform, vector<Vector2f>& out) const {
+const vector<Vector2f>& Polygon::getTransformedPoints() const{
+    TIMERSTART();
+    return transformedPoints;
+    TIMEREND();
+}
+size_t Polygon::getNormalVectors(Transform transform, const vector<Vector2f>& otherFeatures, vector<Vector2f>& out) const {
+    TIMERSTART();
     for (size_t i = 0; i < points.size(); i++) {
         auto prev = transform.convertLocaltoWorld(points[i]);
         auto curr = transform.convertLocaltoWorld(points[(i+1)%points.size()]);
         out.push_back(Maths::normalise(Maths::rotate90_ACW(curr - prev)));   
     }
     return points.size();
+    TIMEREND();
 }
-/*
-float Polygon::getMaxProjection(Transform transform, Vector2f normal) const {
-    float max;
-    for (size_t i = 0; i < points.size(); i++) {
-        float d = Maths::dotProd(normal, transform.convertLocaltoWorld(points[i]));
-        if (i == 0 || d > max) {
-            max = d;
-        }
-    }
-    return max;
-}
-float Polygon::getMinProjection(Transform transform, Vector2f normal) const {
-    float min;
-    for (size_t i = 0; i < points.size(); i++) {
-        float d = Maths::dotProd(normal, transform.convertLocaltoWorld(points[i]));
-        if (i == 0 || d < min) {
-            min = d;
-        }
-    }
-    return min;
-}
-*/
 std::array<float, 2> Polygon::getProjection(Transform transform, Vector2f normal) const {
-    float min;
-    float max;
+    TIMERSTART();
+    float min = 0;
+    float max = 0;
     for (size_t i = 0; i < points.size(); i++) {
         float d = Maths::dotProd(normal, transform.convertLocaltoWorld(points[i]));
         if (i == 0 || d < min) {
@@ -55,17 +40,11 @@ std::array<float, 2> Polygon::getProjection(Transform transform, Vector2f normal
             max = d;
         }
     }
+    TIMEREND();
     return {min, max};
 }
-vector<Vector2f> Polygon::getFeatures(Transform transform) const {
-    return getTransformedPoints(transform);
-}
-void Polygon::getNormalVectors(Transform transform, const vector<Vector2f>& otherFeatures, vector<Vector2f>& out) const {
-    for (size_t i = 1; i < points.size(); i++) {
-        auto prev = transform.convertLocaltoWorld(points[i-1]);
-        auto curr = transform.convertLocaltoWorld(points[i]);
-        out.push_back(Maths::normalise(Maths::rotate90_ACW(curr - prev)));   
-    }
+const vector<Vector2f>& Polygon::getFeatures() const {
+    return getTransformedPoints();
 }
 bool Polygon::checkPoint(Transform transform, Vector2f point) const {
     for (size_t i = 0; i < points.size(); i++) {

@@ -1,6 +1,6 @@
 all: compile link
 
 compile:
-	g++ -Isrc/include -c code/*.cpp
+	g++ -Isrc/include -c code/*.cpp -Wall -O3
 link:
-	g++ *.o -o main.exe -Lsrc/lib -lsfml-graphics -lsfml-window -lsfml-system
+	g++ *.o -o main.exe -Lsrc/lib -lsfml-graphics -lsfml-window -lsfml-system -Wall -O3

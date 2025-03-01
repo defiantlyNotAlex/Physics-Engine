@@ -17,7 +17,7 @@ class Node {
         Node(Node* parent, Transform _transform);
         Node(Transform _transform) : Node(nullptr, _transform) {};
         Node();
-        ~Node();
+        virtual ~Node();
         
         virtual void update(float dt);
         Node* addChild(Node* component);
