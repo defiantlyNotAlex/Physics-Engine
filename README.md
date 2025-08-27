@@ -3,6 +3,8 @@ this is a 2d rigid body physics engine wrtten in c++ with sfml to draw stuff to 
 the physics is pretty stable for small amounts of objects but can become jittery and slow for many objects
 this is a pretty niave implementation with impulse based physics and no constraint solver so it is not particuarly fast and has stability issues
 there is also no broad phase collision detection to speed up the program
+![image info](images/static.png)
+![image info](images/dynamic.png)
 
 I would do this project very differently if I were to do it again
 
